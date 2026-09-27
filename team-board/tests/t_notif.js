@@ -39,6 +39,7 @@ const { chromium } = require('playwright'); const fs=require('fs');
  // Pieter backgrounds his tab (so a real notification would be useful) and Yasser gives him a task
  p.__notifs = [];
  await p.evaluate(() => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
+ await y.click('#col-pieter .foldBtn'); // Pieter's column is folded by default on Yasser's screen; open it first
  await y.click('#col-pieter .newText'); await y.fill('#col-pieter .newText', 'Send the Q4 budget to finance');
  await y.click('#col-pieter .addBtn'); await y.waitForTimeout(2000);
 

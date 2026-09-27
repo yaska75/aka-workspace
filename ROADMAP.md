@@ -1,6 +1,13 @@
 # Roadmap
 
 ## Shipped
+- **Team board: collapsed lists, your current time, and a deposit-folder hint for task results** (27 Sep 2026). On
+  the task screen, everyone else's list now starts folded down to just their name and photo — click it (or the
+  arrow) to open it up and add or see their tasks. Your own list still opens by default. Each person's fold choice
+  is remembered on that device. Your current local time now shows at the top of the page, next to the other
+  buttons. Each task's "Deposit result" button (renamed from "Attach") now also suggests the Drive folder to use —
+  your name, then the task name — before you paste the resulting share link, so results end up organized instead
+  of loose in one folder.
 - **Team board: browser notifications, on this device** (27 Sep 2026). Each person can click "Notify me on this
   device" (top bar, once signed in) to turn on browser notifications for new tasks and chat messages, on that
   browser/device only. They arrive 9am–21:00 Dubai time; outside that window they're held back silently unless
