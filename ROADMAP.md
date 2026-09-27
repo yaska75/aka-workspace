@@ -3,7 +3,7 @@
 ## Ready, waiting for a go-ahead
 - **Team board login** (branch `login-screen`). Each person picks their name and signs in with a simple password; first sign-in creates it.
   Yasser (superuser) and admins can reset a password from the Team panel; there's "Change password" and "Sign out".
-  Three-attempt lockout of 30 seconds after 5 wrong tries. Passwords are stored hashed (PBKDF2) in the page.
+  A 30-second lockout after 5 wrong tries. Passwords are stored hashed (PBKDF2) in the page.
   - Still to do: run the browser test (`team-board/tests/t_login.js`), then publish.
   - Yasser should set his password first, before anyone else can pick his name.
   - Honest limit: this keeps teammates out of each other's accounts, not a determined attacker who can read the page. Real protection comes from sharing the page only with the team.
