@@ -116,6 +116,8 @@ select.skinpick:hover{color:var(--ink);border-color:var(--red)}
 .item small{display:block;color:var(--muted);font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .item .when{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .item .acts{grid-column:2/-1;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.item .itembody{grid-column:2/-1;white-space:pre-wrap;font-size:13px;line-height:1.45;color:var(--ink);background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:4px;overflow-wrap:anywhere}
+.item.hidden .itembody{display:none}
 .pinhide{display:flex;gap:1px;flex:none}
 .pinhide button{border:0;background:none;color:var(--muted);width:22px;height:22px;border-radius:6px;font-size:13px;cursor:pointer;line-height:1;flex:none}
 .pinhide button:hover{background:var(--soft);color:var(--ink)}
@@ -728,6 +730,14 @@ body.pop-on .fab{display:none}
           li.querySelector('b').textContent = it.title || '';
           var sm = li.querySelector('small'); if(it.subtitle) sm.textContent = it.subtitle; else sm.remove();
           li.querySelector('.when').textContent = it.when ? fmtWhen(it.when) : '';
+          if(it.body){
+            var fullBtn = document.createElement('button'); fullBtn.type = 'button'; fullBtn.className = 'mini fullmsg';
+            fullBtn.textContent = 'Read full message';
+            var fullBox = document.createElement('div'); fullBox.className = 'itembody'; fullBox.hidden = true; fullBox.textContent = it.body;
+            fullBtn.addEventListener('click', function(){
+              fullBox.hidden = !fullBox.hidden; fullBtn.textContent = fullBox.hidden ? 'Read full message' : 'Hide message';
+            });
+          }
           var ph = li.querySelector('.pinhide');
           var pinBtn = document.createElement('button'); pinBtn.type = 'button';
           pinBtn.className = 'pin' + (fl.pin ? ' on' : ''); pinBtn.textContent = '\u2605';
@@ -739,6 +749,7 @@ body.pop-on .fab{display:none}
           hideBtn.addEventListener('click', function(){ setFlag(iid, { hide: !fl.hide }); });
           ph.append(pinBtn, hideBtn);
           var acts = document.createElement('div'); acts.className = 'acts';
+          if(fullBtn) acts.appendChild(fullBtn);
           if(it.url && /^https:\/\//.test(it.url)){ var a = document.createElement('a'); a.className = 'mini'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = it.linkLabel || 'Open ↗'; acts.appendChild(a); }
           if(it.messageId || it.threadId){
             var ref = it.mailbox === 'gmail' || (!it.uri && it.threadId) ? 'Gmail threadId ' + (it.threadId || '') + ', messageId ' + (it.messageId || '') : 'Outlook uri ' + (it.uri || '') + ', messageId ' + (it.messageId || '');
@@ -760,7 +771,7 @@ body.pop-on .fab{display:none}
           if(!isPost && (secOf(c) === 'email' || secOf(c) === 'social') && !it.messageId && !it.threadId){
             var wr = document.createElement('button'); wr.type = 'button'; wr.className = 'mini'; wr.textContent = 'Write reply';
             var chn = secOf(c) !== 'social' ? 'Email' : /whatsapp/.test(c.key) ? 'WhatsApp' : /telegram/.test(c.key) ? 'Telegram' : 'LinkedIn';
-            wr.addEventListener('click', function(){ openWriter((chn === 'Email' ? 'Email: ' : chn + ' message from ') + (it.title || '') + (it.subtitle ? '\n' + it.subtitle : '') + '\n\n', chn); });
+            wr.addEventListener('click', function(){ openWriter((chn === 'Email' ? 'Email: ' : chn + ' message from ') + (it.title || '') + (it.body ? '\n' + it.body : it.subtitle ? '\n' + it.subtitle : '') + '\n\n', chn); });
             acts.appendChild(wr);
           }
           var dsec = secOf(c);
@@ -772,7 +783,7 @@ body.pop-on .fab{display:none}
               var prompt, label;
               if(dsec === 'todo'){ label = 'Task: ' + ttl; prompt = 'Help me get this task from my to-do list done right now: "' + ttl + '"' + (it.when ? ' (due ' + it.when + ')' : '') + sub + '. Work out what it needs, look up any emails or context you need, draft any email as a draft in the right mailbox, and ask me for anything only I know. Keep each step short and tell me when it is ready to tick off on the team board.'; }
               else if(dsec === 'email'){ label = 'Email: ' + ttl; prompt = 'Help me deal with this email now: "' + ttl + '"' + sub + '.' + ref + (ref ? ' Read it first.' : ' It is in my akamedia.ae work inbox, which you cannot open, so work from these details and ask me to paste the text if you need it.') + ' Tell me in two lines what it needs from me, then write a short human reply in my voice and save it as a draft in the same mailbox if you can.'; }
-              else if(dsec === 'social'){ label = 'LinkedIn: ' + ttl; prompt = 'Help me reply to this LinkedIn message from ' + ttl + sub + '. You cannot open LinkedIn, so work from this; ask me to paste the message if you need more. Write a short, human LinkedIn reply in my voice that I can paste.'; }
+              else if(dsec === 'social'){ label = 'LinkedIn: ' + ttl; prompt = it.body ? 'Help me reply to this LinkedIn message from ' + ttl + '. Here is the full message, exactly as sent:\n\n"' + it.body + '"\n\nWrite a short, human LinkedIn reply in my voice that I can paste.' : 'Help me reply to this LinkedIn message from ' + ttl + sub + '. You cannot open LinkedIn, so work from this; ask me to paste the message if you need more. Write a short, human LinkedIn reply in my voice that I can paste.'; }
               else { label = 'Meeting: ' + ttl; prompt = 'Help me prepare for this: "' + ttl + '"' + sub + (it.when ? ' at ' + it.when : '') + '. Pull any related emails, give me a short brief and anything I should send beforehand as drafts.'; }
               doWithClaude(label, prompt);
             });
@@ -797,6 +808,7 @@ body.pop-on .fab{display:none}
             acts.appendChild(rm);
           }
           if(acts.children.length) li.appendChild(acts);
+          if(fullBox) li.appendChild(fullBox);
           ul.appendChild(li);
         });
         el.appendChild(ul);
@@ -844,7 +856,7 @@ body.pop-on .fab{display:none}
       + 'The workspace starts empty; Yasser opens sections from a row of buttons: Email (cards with source gmail or outlook), Calendar (source calendar), Team (source teams: Microsoft Teams and team matters), Social (source social), Claude (source claude: notes, drafts, plans). Choose each card\'s source so it lands in the right section.\n' + 'How to work: decide yourself what to pull. Put anything Yasser should see or act on into cards with pin_card: one card per topic, only what matters, most urgent first, each item with a short title, one-line subtitle, time, priority (high/med/low) and url (webLink) when there is one. For emails also pass mailbox plus messageId and uri (Outlook) or threadId (Gmail) so the card can offer Summarise and Draft reply. In Gmail skip promotions, social and automated notifications unless asked (use category:primary). Replace a card by reusing its key. Remove cards that are stale or no longer asked for. If a source returns nothing, say so in a one-line card summary rather than inventing content. Never invent emails, meetings or people.\n'
       + 'Useful links you may pin: Team board ' + TEAM_BOARD + ' (everyone\'s to-do lists and team chat), Team files ' + TEAM_FILES + ' (Google Drive folder AKATEAMFILEEXCHANGE), Outlook https://outlook.office.com/mail/ , Calendar https://outlook.office.com/calendar/ .\n'
       + 'Reply in the chat briefly: two or three sentences saying what you pulled or did, plain words, no headings. Emails in Yasser\'s voice: direct, warm, short, signed "Yasser".\n'
-      + 'His real work mailbox is yasser@akamedia.ae (Namecheap, read in the Outlook app on his Mac). You cannot reach it with tools; a card with key outlook-work is refreshed from that Outlook app every hour. Never remove or replace the outlook-work card. The cards with keys todo-mine (his to-do list) and team-chat (recent team chat) are copied from the team board every hour: never remove or replace them, and use them when briefing. Cards with keys whatsapp-chats and telegram-chats are refreshed hourly from those apps on his Mac: never remove or replace them. A card with key posting-rhythm tracks when he last posted on LinkedIn and Instagram and is refreshed daily: never remove or replace it; if he has not posted for a week, mention it in the brief. Anything he will post publicly is public-facing, so it gets the same checks as a client email. Likewise a card with key linkedin-inbox is refreshed every hour from LinkedIn in his Chrome: never remove or replace it, and use it for LinkedIn messages. Use its items as his work email when briefing, and put work items first.\n'
+      + 'His real work mailbox is yasser@akamedia.ae (Namecheap, read in the Outlook app on his Mac). You cannot reach it with tools; a card with key outlook-work is refreshed from that Outlook app every hour. Never remove or replace the outlook-work card. The cards with keys todo-mine (his to-do list) and team-chat (recent team chat) are copied from the team board every hour: never remove or replace them, and use them when briefing. Cards with keys whatsapp-chats and telegram-chats are refreshed hourly from those apps on his Mac: never remove or replace them. A card with key posting-rhythm tracks when he last posted on LinkedIn and Instagram and is refreshed daily: never remove or replace it; if he has not posted for a week, mention it in the brief. Anything he will post publicly is public-facing, so it gets the same checks as a client email. Likewise a card with key linkedin-inbox is refreshed every hour from LinkedIn in his Chrome: never remove or replace it, and use it for LinkedIn messages. Its items now carry the other person\'s exact message in a "body" field when the sync could read it, not just a short summary, so when he asks you to reply to one, use that exact text rather than asking him to paste it. Use its items as his work email when briefing, and put work items first.\n'
       + 'Cards now on the workspace:\n' + list;
   }
   function tools(step, signal){

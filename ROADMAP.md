@@ -1,6 +1,11 @@
 # Roadmap
 
 ## Shipped
+- **Command Centre: full LinkedIn messages, not just a summary** (27 Sep 2026). The LinkedIn sync now opens your top
+  8 conversations and captures the other person's exact message, not just a one-line gloss. Each item with a full
+  message gets a "Read full message" button that shows it in place; "Do it with Claude" on that item drafts a reply
+  straight from the real words, instead of asking you to paste the message. Honest trade-off: opening a conversation
+  to read it marks it read on LinkedIn, so more conversations now show as read after each hourly sync than before.
 - **Command Centre: Spotify instead of Apple Music** (27 Sep 2026). The music player (header note button) now embeds a
   Spotify playlist (AVICII - Essentials) instead of Apple Music, with an "Open in Spotify" link and the same
   play/hide/stop controls as before. Full songs need you signed in to Spotify in that browser; otherwise you get
@@ -69,4 +74,5 @@
 - Outlook, WhatsApp, Telegram and LinkedIn syncs need Yasser's Mac awake with Claude desktop, the apps and Chrome open.
   If the Mac is away for a while, a task can be suspended ("device absent") and needs switching back on.
 - Telegram only shows the part of the chat list that is visible on screen.
-- Opening LinkedIn messaging marks the newest conversation read.
+- The LinkedIn sync now opens each of the top 8 conversations to read the sender's exact message, not just the newest
+  one, so it marks each of those as read on LinkedIn (not just the newest, as before).
