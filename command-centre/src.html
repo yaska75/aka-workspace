@@ -248,6 +248,12 @@ body.pop-on .fab{display:none}
 .bc{flex:1 1 200px;max-width:280px;text-align:center;padding:16px 10px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
 .bc-t{display:block;font:700 36px/1.1 "Outfit",sans-serif;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .bc-l{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+.bc-edit{display:block;margin:6px auto 0;border:0;background:none;color:var(--muted);text-decoration:underline;font-size:11.5px;padding:0}
+.bc-edit:hover{color:var(--red)}
+.bc-pick{margin-top:10px;text-align:left}
+.bc-pick input,.bc-pick select{display:block;width:100%;margin-top:6px;font:inherit;color:var(--ink);background:var(--surface,var(--panel));border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px}
+.bc-tzq{margin:8px 0 0;font-size:11.5px;color:var(--muted)}
+.bc-acts{display:flex;gap:8px;justify-content:center;margin-top:8px}
 @media (max-width:480px){.bc-t{font-size:27px}.bigclocks{gap:10px}}
 
 @media (max-width:640px){
@@ -364,7 +370,17 @@ body.pop-on .fab{display:none}
   </section>
   <p class="foot">Claude reads your Gmail, Outlook, calendar and Teams and can save drafts. It never sends anything. <button type="button" id="clearAll">Clear workspace</button></p>
   <div class="bigclocks" id="bigclocks" aria-label="Your time and Dubai time">
-    <div class="bc"><span class="bc-t" id="bcLocal">--:--</span><span class="bc-l" id="bcLocalLabel">Your time</span></div>
+    <div class="bc">
+      <span class="bc-t" id="bcLocal">--:--</span><span class="bc-l" id="bcLocalLabel">Your time</span>
+      <button type="button" class="bc-edit" id="bcEditBtn">Not here? Set your city</button>
+      <div class="bc-pick" id="bcPick" hidden>
+        <input type="text" id="bcPickCity" list="bcCityList" placeholder="City, e.g. Toronto" autocomplete="off">
+        <datalist id="bcCityList"></datalist>
+        <p class="bc-tzq" id="bcTzq" hidden>Which time zone is that?</p>
+        <select id="bcPickTz" aria-label="Time zone" hidden></select>
+        <div class="bc-acts"><button type="button" class="mini" id="bcPickCancel">Cancel</button><button type="button" class="mini claude" id="bcPickSave">Save</button></div>
+      </div>
+    </div>
     <div class="bc"><span class="bc-t" id="bcDubai">--:--</span><span class="bc-l">Dubai</span></div>
   </div>
 </div>
@@ -417,9 +433,55 @@ body.pop-on .fab{display:none}
   // ---------- clocks ----------
   var OFFICES = [['Dubai','Asia/Dubai',true],['Riyadh','Asia/Riyadh'],['Cape Town','Africa/Johannesburg'],['London','Europe/London']];
   function dubaiDay(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dubai' }); }
-  var localTz = 'UTC'; try { localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch(e){}
-  var localName = (localTz.split('/').pop() || localTz).replace(/_/g, ' ');
-  if($('bcLocalLabel')) $('bcLocalLabel').textContent = localTz === 'Asia/Dubai' ? 'Your time (Dubai)' : 'Your time · ' + localName;
+  var AUTO_TZ = 'UTC'; try { AUTO_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch(e){}
+  var CITY_TZ = {
+    'toronto': ['Toronto', 'America/Toronto'], 'dubai': ['Dubai', 'Asia/Dubai'], 'abu dhabi': ['Abu Dhabi', 'Asia/Dubai'],
+    'riyadh': ['Riyadh', 'Asia/Riyadh'], 'jeddah': ['Jeddah', 'Asia/Riyadh'], 'doha': ['Doha', 'Asia/Qatar'],
+    'cape town': ['Cape Town', 'Africa/Johannesburg'], 'johannesburg': ['Johannesburg', 'Africa/Johannesburg'],
+    'london': ['London', 'Europe/London'], 'bratislava': ['Bratislava', 'Europe/Bratislava'], 'moscow': ['Moscow', 'Europe/Moscow'],
+    'new york': ['New York', 'America/New_York'], 'los angeles': ['Los Angeles', 'America/Los_Angeles'],
+    'san francisco': ['San Francisco', 'America/Los_Angeles'], 'vancouver': ['Vancouver', 'America/Vancouver'],
+    'montreal': ['Montreal', 'America/Toronto'], 'paris': ['Paris', 'Europe/Paris'], 'berlin': ['Berlin', 'Europe/Berlin'],
+    'singapore': ['Singapore', 'Asia/Singapore'], 'mumbai': ['Mumbai', 'Asia/Kolkata'], 'cairo': ['Cairo', 'Africa/Cairo'],
+    'istanbul': ['Istanbul', 'Europe/Istanbul'], 'nairobi': ['Nairobi', 'Africa/Nairobi'], 'lagos': ['Lagos', 'Africa/Lagos']
+  };
+  var LOC_KEY = 'cc-local-loc';
+  var savedLoc = null; try { savedLoc = JSON.parse(lsGet(LOC_KEY) || 'null'); } catch(e){ savedLoc = null; }
+  function localTz(){ return (savedLoc && savedLoc.tz) || AUTO_TZ; }
+  function localLabel(){
+    if(savedLoc && savedLoc.name) return 'Your time · ' + savedLoc.name;
+    var tz = AUTO_TZ, name = (tz.split('/').pop() || tz).replace(/_/g, ' ');
+    return tz === 'Asia/Dubai' ? 'Your time (Dubai)' : 'Your time · ' + name;
+  }
+  function paintLocalLabel(){ if($('bcLocalLabel')) $('bcLocalLabel').textContent = localLabel(); }
+  paintLocalLabel();
+  (function(){
+    var dl = $('bcCityList'); if(dl) Object.keys(CITY_TZ).forEach(function(k){ var o = document.createElement('option'); o.value = CITY_TZ[k][0]; dl.appendChild(o); });
+    var pick = $('bcPick'), cityIn = $('bcPickCity'), tzq = $('bcTzq'), tzSel = $('bcPickTz');
+    function tzList(){
+      var list = []; try { list = Intl.supportedValuesOf('timeZone'); } catch(e){ list = ['Asia/Dubai','Asia/Riyadh','Africa/Johannesburg','Europe/London','Europe/Bratislava','America/Toronto','America/New_York','America/Los_Angeles']; }
+      tzSel.innerHTML = ''; list.forEach(function(z){ var o = document.createElement('option'); o.value = z; o.textContent = z.replace(/_/g, ' '); tzSel.appendChild(o); });
+    }
+    function syncUnknown(){
+      var v = cityIn.value.trim().toLowerCase(), known = !!CITY_TZ[v];
+      tzq.hidden = tzSel.hidden = known || !v;
+      if(!tzSel.options.length) tzList();
+      if(!known && v) tzSel.value = AUTO_TZ;
+    }
+    if($('bcEditBtn')) $('bcEditBtn').addEventListener('click', function(){
+      cityIn.value = (savedLoc && savedLoc.name) || ''; syncUnknown(); pick.hidden = false; cityIn.focus();
+    });
+    if($('bcPickCancel')) $('bcPickCancel').addEventListener('click', function(){ pick.hidden = true; });
+    cityIn && cityIn.addEventListener('input', syncUnknown);
+    if($('bcPickSave')) $('bcPickSave').addEventListener('click', function(){
+      var v = cityIn.value.trim(); if(!v) return;
+      var known = CITY_TZ[v.toLowerCase()];
+      savedLoc = known ? { name: known[0], tz: known[1] } : { name: v, tz: tzSel.value || AUTO_TZ };
+      lsSet(LOC_KEY, JSON.stringify(savedLoc));
+      paintLocalLabel(); pick.hidden = true; if(typeof tick === 'function') tick();
+    });
+    cityIn && cityIn.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); $('bcPickSave').click(); } if(e.key === 'Escape'){ pick.hidden = true; } });
+  })();
   function tick(){
     var now = new Date(), box = $('clocks'); box.textContent = '';
     OFFICES.forEach(function(o){
@@ -430,7 +492,7 @@ body.pop-on .fab{display:none}
     var h = +now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', hourCycle: 'h23' });
     $('greet').textContent = (h < 5 ? 'Working late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', Yasser · ' + now.toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' });
     var bl = $('bcLocal'), bd = $('bcDubai');
-    if(bl) bl.textContent = now.toLocaleTimeString('en-GB', { timeZone: localTz, hour: '2-digit', minute: '2-digit' });
+    if(bl) bl.textContent = now.toLocaleTimeString('en-GB', { timeZone: localTz(), hour: '2-digit', minute: '2-digit' });
     if(bd) bd.textContent = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', minute: '2-digit' });
   }
   tick(); setInterval(tick, 30000);
