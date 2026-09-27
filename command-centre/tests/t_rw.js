@@ -1,0 +1,23 @@
+const { chromium } = require('playwright'); const fs=require('fs');
+(async()=>{
+ const html='<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}</style></head><body>'+fs.readFileSync(__dirname+'/../../build/command-centre.html','utf8')+'</body></html>';
+ const b=await chromium.launch(); const errs=[];
+ const p=await b.newPage({viewport:{width:1440,height:900}}); p.on('pageerror',e=>errs.push(e.message));
+ await p.route('https://cc.test/', r=>r.fulfill({contentType:'text/html',body:html}));
+ await p.addInitScript(()=>{ localStorage.setItem('cc-meta', JSON.stringify({lastBrief:new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Dubai'})}));
+   localStorage.setItem('cc-cards', JSON.stringify({w:{key:'w',title:'Work inbox',source:'outlook',items:[{title:'Modon request',subtitle:'Mariam Khanji thanked Pieter',when:'2026-09-25',priority:'med'}],pulledAt:new Date().toISOString(),order:-1}}));
+   window.__prompts=[]; const s=(input,o)=>{ window.__prompts.push(input); const t='Hi Sam,\nTuesday works. Talk then.\nYasser'; o&&o.onText&&o.onText({text:t,delta:t}); return Promise.resolve({text:t,truncated:false}); };
+   window.claude={use:(n)=>Promise.resolve(n==='sample'?s:null)}; });
+ await p.goto('https://cc.test/'); await p.waitForTimeout(600);
+ await p.click('.dk[data-sec="email"]'); await p.click('.item .mini:has-text("Write reply")'); await p.waitForTimeout(300);
+ console.log('writer open', await p.evaluate(()=>document.getElementById('rw').open), JSON.stringify(await p.inputValue('#rwIn')));
+ await p.fill('#rwIn','Hi Yasser, are you free Tuesday for a call about the Charles doc? Sam');
+ await p.click('#rwCh button:has-text("LinkedIn")'); await p.fill('#rwWant','yes Tuesday 3pm');
+ await p.click('#rwGo'); await p.waitForTimeout(300);
+ console.log('out', JSON.stringify(await p.textContent('#rwText')));
+ const pr=await p.evaluate(()=>window.__prompts[0]); console.log('prompt has LinkedIn', pr.includes('LinkedIn message'), pr.includes('yes Tuesday 3pm'));
+ await p.click('[data-tweak="Make it shorter."]'); await p.waitForTimeout(200);
+ const pr2=await p.evaluate(()=>window.__prompts[1]); console.log('tweak includes prev', pr2.includes('previous draft'));
+ await p.screenshot({path:__dirname+'/rw.png'});
+ console.log(JSON.stringify(errs)); await b.close();
+})();

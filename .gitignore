@@ -1,0 +1,4 @@
+build/
+*.png
+node_modules/
+live/

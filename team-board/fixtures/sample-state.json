@@ -1,0 +1,84 @@
+{
+ "rev": 1,
+ "people": [
+  {
+   "id": "pieter",
+   "name": "Pieter",
+   "role": "admin",
+   "team": "management",
+   "location": "Cape Town",
+   "color": 0,
+   "photo": "",
+   "tasks": [
+    {
+     "id": "t1",
+     "text": "Sample task for Pieter",
+     "done": false,
+     "due": "2026-09-28",
+     "createdAt": 1790514182868,
+     "addedBy": "yasser"
+    },
+    {
+     "id": "t2",
+     "text": "Finished sample task",
+     "done": true,
+     "due": "2026-09-27",
+     "createdAt": 1790514181868,
+     "addedBy": "yasser"
+    }
+   ]
+  },
+  {
+   "id": "yasser",
+   "name": "Yasser",
+   "role": "superuser",
+   "team": "management",
+   "location": "Dubai",
+   "color": 1,
+   "photo": "",
+   "tasks": [
+    {
+     "id": "t3",
+     "text": "Sample task for Yasser",
+     "done": false,
+     "due": "2026-09-29",
+     "createdAt": 1790514180868,
+     "addedBy": "pieter"
+    }
+   ]
+  },
+  {
+   "id": "andrei",
+   "name": "Andrei",
+   "role": "member",
+   "team": "post",
+   "location": "Dubai",
+   "color": 2,
+   "photo": "",
+   "tasks": []
+  },
+  {
+   "id": "mich",
+   "name": "Mich",
+   "role": "member",
+   "team": "post",
+   "location": "Dubai",
+   "color": 3,
+   "photo": "",
+   "tasks": []
+  },
+  {
+   "id": "srijeeth",
+   "name": "Srijeeth",
+   "role": "member",
+   "team": "finance",
+   "location": "Mumbai",
+   "color": 4,
+   "photo": "",
+   "tasks": []
+  }
+ ],
+ "chat": {},
+ "reads": {},
+ "acks": {}
+}

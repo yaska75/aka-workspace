@@ -1,0 +1,1097 @@
+<title>AKA Command Centre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F3F1;--panel:#FFFFFF;--ink:#141417;--muted:#63636B;--line:#E3E3DF;--soft:#EDEDEA;
+  --red:#EB1843;--red-ink:#FFFFFF;--red-soft:#FDE7EC;--blue:#0F6CBD;--ok:#1E8A4C;
+  --shadow:0 1px 0 rgba(20,20,23,.04),0 10px 30px rgba(20,20,23,.06);
+  --logo:url(LOGO_L);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D0D10;--panel:#17171B;--ink:#EDEDF0;--muted:#9A9AA3;--line:#2A2A31;--soft:#202026;
+  --red:#FF4D6D;--red-ink:#17080B;--red-soft:#3A1520;--blue:#6CB4F5;--ok:#5CCB8A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);--logo:url(LOGO_D);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D0D10;--panel:#17171B;--ink:#EDEDF0;--muted:#9A9AA3;--line:#2A2A31;--soft:#202026;
+  --red:#FF4D6D;--red-ink:#17080B;--red-soft:#3A1520;--blue:#6CB4F5;--ok:#5CCB8A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);--logo:url(LOGO_D);color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:20px;padding-block:18px 40px;display:flex;flex-direction:column;gap:18px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:16px;min-width:0}
+.logo{width:100px;aspect-ratio:450/215;flex:none;background:var(--logo) left center/contain no-repeat}
+.brand .t{padding-left:16px;border-left:2px solid var(--red);display:flex;flex-direction:column;gap:1px}
+.brand .t b{font:600 13px/1.2 "Outfit",sans-serif;letter-spacing:.32em;text-transform:uppercase}
+.brand .t span{font-size:14px;color:var(--muted)}
+.right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.clocks{display:flex;gap:6px;flex-wrap:wrap}
+.clk{display:flex;flex-direction:column;align-items:flex-end;padding:3px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.clk b{font:500 14px/1.2 "JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.clk span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.clk.home{border-color:var(--red)}
+.src-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--panel)}
+.src-pill i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.src-pill.ok i{background:var(--ok)}
+.src-pill.bad i{background:var(--red)}
+
+/* command bar */
+.cmd{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:10px;display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}
+.cmd textarea{font:inherit;font-size:16px;color:var(--ink);background:transparent;border:0;resize:none;padding:10px 12px;min-height:46px;max-height:180px;outline:none}
+.cmd .go{border:0;background:var(--red);color:var(--red-ink);border-radius:12px;height:44px;padding:0 20px;font-weight:600}
+.cmd .go.stop{background:var(--ink);color:var(--bg)}
+.cmd .brief{border:1px solid var(--line);background:var(--panel);border-radius:12px;height:44px;padding:0 14px;font-size:14px;white-space:nowrap}
+.cmd .brief:hover{border-color:var(--red);color:var(--red)}
+
+/* claude reply */
+.reply{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.reply .hd{display:flex;align-items:center;gap:10px}
+.reply .hd b{font:600 12px/1 "Outfit",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+.reply .hd .steps{font-size:13px;color:var(--muted)}
+.reply .hd .x{margin-left:auto;border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:0}
+.reply .q{font-size:13px;color:var(--muted);margin:0}
+.body p{margin:0 0 8px}.body p:last-child{margin-bottom:0}
+.body ul{margin:0 0 8px;padding-left:20px}
+.body code{font-family:"JetBrains Mono",monospace;font-size:13px;background:var(--soft);padding:1px 4px;border-radius:4px}
+.body a{color:var(--red)}
+.thinking{color:var(--muted);font-style:italic}
+.err{color:var(--red);font-size:13px}
+.log{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto}
+.log .u{align-self:flex-end;background:var(--ink);color:var(--bg);padding:6px 11px;border-radius:12px 12px 4px 12px;font-size:14px;max-width:80%;white-space:pre-wrap}
+.log .a{font-size:14px}
+
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:0;animation:rise .35s ease-out}
+.card.wide{grid-column:span 2}
+@media (max-width:760px){.card.wide{grid-column:auto}}
+@keyframes rise{from{transform:translateY(8px);opacity:.4}to{transform:none;opacity:1}}
+.card .ch{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px}
+.card h3{margin:0;font:700 19px/1.2 "Outfit",sans-serif;letter-spacing:-.01em;text-wrap:balance}
+.card .meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:2px 8px;border:1px solid var(--line)}
+.badge.outlook{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 35%,var(--line))}
+.badge.calendar{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.badge.teams{color:#7B83EB}
+.badge.todo,.badge.team{color:var(--ink)}
+.badge.gmail{color:#D93025;border-color:color-mix(in srgb,#D93025 35%,var(--line))}
+.badge.claude{color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
+.card .tools{margin-left:auto;display:flex;gap:2px;flex:none}
+.card .tools button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;font-size:15px}
+.card .tools button:hover{background:var(--soft);color:var(--ink)}
+.card .sum{padding:0 16px 10px;font-size:14px;color:var(--muted)}
+.card ul.items{list-style:none;margin:0;padding:0 8px 10px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px;border-radius:12px}
+.item:hover{background:var(--soft)}
+.item .flag{width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--line)}
+.item .flag.high{background:var(--red)}
+.item .flag.med{background:#E0A526}
+.item .flag.low{background:var(--ok)}
+.item b{display:block;font-weight:600;font-size:14.5px;line-height:1.35;overflow-wrap:anywhere}
+.item small{display:block;color:var(--muted);font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.item .when{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.item .acts{grid-column:2/-1;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.mini{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:3px 9px;font-size:12.5px;text-decoration:none;color:var(--ink)}
+.mini:hover{border-color:var(--red);color:var(--red)}
+.card .text{padding:0 16px 14px;font-size:14.5px}
+
+.dock{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.dk{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel);text-align:left;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+.dk:hover{border-color:var(--red);transform:translateY(-1px)}
+.dk .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--soft);color:var(--ink)}
+.dk b{font:600 17px/1.1 "Outfit",sans-serif;letter-spacing:-.01em}
+.dk .n{position:absolute;top:14px;right:14px;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--red);color:var(--red-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.dk[aria-pressed=true]{border-color:var(--red);box-shadow:0 0 0 2px color-mix(in srgb,var(--red) 25%,transparent)}
+.dk[aria-pressed=true] .ic{background:var(--red);color:var(--red-ink)}
+.blank{min-height:38vh;display:grid;place-items:center;color:var(--muted);font-size:14px}
+.blank p{margin:0;letter-spacing:.04em}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px 16px 18px;display:flex;flex-direction:column;gap:12px;animation:rise .25s ease-out}
+.sh{display:flex;align-items:center;gap:10px}
+.sh h2{margin:0;font:700 22px/1.1 "Outfit",sans-serif;letter-spacing:-.02em;margin-right:auto}
+.sr{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:5px 12px;font-size:13px}
+.sr:hover{border-color:var(--red);color:var(--red)}
+.sc{border:0;background:none;color:var(--muted);font-size:20px;width:32px;height:32px;border-radius:9px}
+.sc:hover{background:var(--soft);color:var(--ink)}
+.sec .card{box-shadow:none}
+.sec .cmd{box-shadow:none}
+.sec .reply{border-color:var(--line)}
+.rw{border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.rw summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+.rw summary::-webkit-details-marker{display:none}
+.rw summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--red);color:var(--red-ink);font-weight:700}
+.rw[open] summary::before{content:"\2212"}
+.rwb{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+.rwb textarea,.rwb input{font:inherit;font-size:14.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;resize:vertical}
+.rwb textarea:focus,.rwb input:focus{outline:none;border-color:var(--red)}
+.rwrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:flex;gap:2px;background:var(--soft);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:8px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);font-weight:600}
+.go.small{height:38px;padding:0 16px;border:0;border-radius:10px;background:var(--red);color:var(--red-ink);font-weight:600}
+.rwout{display:flex;flex-direction:column;gap:10px}
+.rwtext{white-space:pre-wrap;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;padding:12px 14px;font-size:15px;line-height:1.55}
+.qn{font-size:12px;color:var(--muted);align-self:center}
+.mus-btn{cursor:pointer;font-family:inherit}
+.post-pill{cursor:pointer;font-family:inherit;border-color:var(--red);color:var(--red);font-weight:600}
+.mus-btn svg{color:var(--red)}
+.mus-btn.on{border-color:var(--ink);color:var(--ink)}
+.mus{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:45;width:min(380px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden}
+.mus.hide{visibility:hidden;pointer-events:none;height:0;border:0;box-shadow:none}
+.mus-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 8px 14px;font:600 14px/1.2 "Outfit",sans-serif;color:var(--ink)}
+.mus-h .acts{display:flex;gap:6px}
+.mus-h button,.mus-h a{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 10px;font:500 12px/1.2 "Outfit",sans-serif;text-decoration:none;cursor:pointer}
+.mus iframe{display:block;width:100%;height:450px;border:0;background:transparent}
+.mus-note{font-size:12px;color:var(--muted);padding:0 14px 10px}
+@media (max-width:560px){.mus{left:0;right:0;bottom:0;width:100vw;border-radius:18px 18px 0 0}.mus iframe{height:360px}}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 18px 12px 14px;background:var(--ink);color:var(--bg);font:600 15px/1 "Outfit",sans-serif;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.fab svg{color:var(--red)}
+.fab:hover{transform:translateY(-1px)}
+.fab.busy::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+.pop{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:50;width:min(440px,calc(100vw - 32px));height:min(640px,calc(100vh - 40px));background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;animation:rise .2s ease-out}
+.poph{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 16px;border-bottom:1px solid var(--line)}
+.poph .spark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--red);color:var(--red-ink)}
+.poph .pt{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.poph .pt b{font:600 16px/1.2 "Outfit",sans-serif}
+.poph .pt span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.pbtn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:4px 10px;font-size:13px}
+.pbtn.x{border:0;font-size:20px;padding:0 8px;color:var(--muted)}
+.pthread{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
+.pu{align-self:flex-end;max-width:85%;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:14px 14px 4px 14px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.pa{align-self:flex-start;max-width:95%;font-size:14.5px;line-height:1.5;overflow-wrap:anywhere}
+.pa .psteps{font-size:12px;color:var(--muted);margin-bottom:4px}
+.pa .err{margin-top:6px}
+.pwelcome{color:var(--muted);font-size:14px;margin:auto 0;text-align:center;padding:20px}
+.pform{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+.pform textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px 11px;resize:none;min-height:42px;max-height:150px}
+.pform textarea:focus{outline:none;border-color:var(--red)}
+.psend{border:0;border-radius:12px;padding:0 16px;background:var(--red);color:var(--red-ink);font-weight:600;align-self:end;height:42px}
+.psend.stop{background:var(--ink);color:var(--bg)}
+.pfoot{margin:0;padding:0 14px 10px;font-size:11.5px;color:var(--muted)}
+body.pop-on .fab{display:none}
+@media (max-width:560px){.pop{right:0;bottom:0;width:100vw;height:100%;border-radius:0;border:0}}
+.mini.claude{border-color:color-mix(in srgb,var(--red) 40%,var(--line));color:var(--red);font-weight:600}
+.rev{align-self:stretch;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:14px;background:var(--panel);padding:12px;display:flex;flex-direction:column;gap:8px}
+.revh{display:flex;align-items:baseline;gap:8px}
+.revh b{font:600 14px/1.2 "Outfit",sans-serif}
+.revh span{font-size:12px;color:var(--muted)}
+.meta2{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.revtext{font:inherit;font-size:14.5px;line-height:1.5;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;resize:vertical;width:100%}
+.revacts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.revacts .psend{height:36px}
+.revacts .psend[disabled]{opacity:.45;cursor:default}
+.revst{font-size:12.5px;color:var(--muted)}
+.revst a{color:var(--red);font-weight:600}
+.checks{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:8px}
+.chh{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ck{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;font-size:13px}
+.ck b{font-weight:600;font-size:13px}
+.ck ul{margin:2px 0 0;padding-left:16px;color:var(--muted)}
+.ck.warn ul{color:var(--ink)}
+.ck .ci{width:16px;height:16px;border-radius:50%;margin-top:1px;border:2px solid var(--line)}
+.ck.run .ci{border-color:var(--line);border-top-color:var(--red);animation:spin 1s linear infinite}
+.ck.ok .ci{border-color:var(--ok);background:var(--ok)}
+.ck.warn .ci{border-color:#E0A526;background:#E0A526}
+.ck.you .ci{border-color:var(--ink)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sempty{margin:0;color:var(--muted);font-size:14px}
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px}
+.app{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink)}
+.app:hover{border-color:var(--red)}
+.app b{font:600 15px/1.2 "Outfit",sans-serif}
+.app small{color:var(--muted);font-size:13px}
+@media (max-width:760px){.dock{grid-template-columns:repeat(3,minmax(0,1fr))}.dk{padding:12px}.dk .ic{width:34px;height:34px}}
+@media (max-width:420px){.dock{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.empty{border:1.5px dashed var(--line);border-radius:22px;padding:56px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;color:var(--muted)}
+.empty h2{margin:0;font:700 26px/1.15 "Outfit",sans-serif;color:var(--ink);letter-spacing:-.02em}
+.empty p{margin:0;max-width:52ch}
+.sugg{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 13px;font-size:13.5px;color:var(--ink)}
+.chip:hover{border-color:var(--red);color:var(--red)}
+.foot{font-size:12px;color:var(--muted);text-align:center}
+.foot button{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:12px;padding:0}
+
+@media (max-width:640px){
+  .cmd{grid-template-columns:1fr auto}
+  .cmd textarea{grid-column:1/-1}
+  .clocks .clk:not(.home){display:none}
+  .logo{width:84px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="logo" role="img" aria-label="a.k.a. Media"></span>
+      <div class="t"><b>Command Centre</b><span id="greet">Yasser Obeid</span></div></div>
+    <div class="right">
+      <button type="button" class="src-pill post-pill" id="postPill" hidden title="Open Social"></button><button type="button" class="src-pill mus-btn" id="musBtn" aria-controls="mus" aria-expanded="false" title="Avicii Essentials on Apple Music"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>Music</button><span class="src-pill" id="gPill"><i></i>Gmail</span><span class="src-pill" id="m365Pill"><i></i>Microsoft 365</span>
+      <div class="clocks" id="clocks" aria-label="Office times"></div>
+    </div>
+  </header>
+
+  <nav class="dock" id="dock" aria-label="Sections">
+    <button type="button" class="dk" data-sec="todo" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.6 2.6L16 9.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>To do</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="email" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><b>Email</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="calendar" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b>Calendar</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="team" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6M14.5 15.2c.8-.5 1.6-.7 2.5-.7 2 0 3.6 1.3 4 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b>Team</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="social" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11v8H9l-4 3.5V13H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 9h5v8h-1v3l-3.5-3H11v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><b>Social</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="claude" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="currentColor"/></svg></span><b>Claude</b><span class="n" hidden></span></button>
+  </nav>
+  <div class="blank" id="blank"><p>Choose a section to open.</p></div>
+  <section class="sec" data-sec="todo" hidden aria-label="To do">
+    <div class="sh"><h2>To do</h2><a class="sr" href="https://claude.ai/artifact/8GwGDwq8AAmCDmQAqEZjif" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">Open team board ↗</a><button type="button" class="sc" aria-label="Close To do">×</button></div>
+    <div class="canvas" id="cv-todo"></div>
+    <p class="sempty" id="se-todo" hidden></p>
+  </section>
+  <section class="sec" data-sec="email" hidden aria-label="Email">
+    <div class="sh"><h2>Email</h2><button type="button" class="sr" data-ask="Refresh my email: pull emails from the last 3 days that need my reply or attention from Gmail and Outlook into email cards.">Refresh</button><button type="button" class="sc" aria-label="Close Email">×</button></div>
+    <div class="canvas" id="cv-email"></div>
+    <p class="sempty" id="se-email" hidden></p>
+  </section>
+  <section class="sec" data-sec="calendar" hidden aria-label="Calendar">
+    <div class="sh"><h2>Calendar</h2><button type="button" class="sr" data-ask="Pull my calendar for today and the next 7 days into a calendar card.">Refresh</button><button type="button" class="sc" aria-label="Close Calendar">×</button></div>
+    <div class="canvas" id="cv-calendar"></div>
+    <p class="sempty" id="se-calendar" hidden></p>
+  </section>
+  <section class="sec" data-sec="team" hidden aria-label="Team">
+    <div class="sh"><h2>Team</h2><button type="button" class="sr" data-ask="Pull recent Microsoft Teams messages and anything my team needs from me into team cards.">Refresh</button><button type="button" class="sc" aria-label="Close Team">×</button></div>
+    <div class="apps">
+      <a class="app" href="https://claude.ai/artifact/8GwGDwq8AAmCDmQAqEZjif" target="_blank" rel="noopener noreferrer"><b>Team board</b><small>To-do lists, chat, calls and alerts ↗</small></a>
+      <a class="app" href="https://drive.google.com/drive/folders/1ZeCn53_VgPlSZ0ybts4QlBoIxexRxjFh" target="_blank" rel="noopener noreferrer"><b>Team files</b><small>AKATEAMFILEEXCHANGE on Drive ↗</small></a>
+    </div>
+    <div class="canvas" id="cv-team"></div>
+    <p class="sempty" id="se-team" hidden></p>
+  </section>
+  <section class="sec" data-sec="social" hidden aria-label="Social">
+    <div class="sh"><h2>Social</h2><button type="button" class="sc" aria-label="Close Social">×</button></div>
+    <div class="apps">
+      <a class="app" href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><b>WhatsApp</b><small>Synced hourly from your Mac · open WhatsApp Web ↗</small></a>
+      <a class="app" href="https://web.telegram.org/" target="_blank" rel="noopener noreferrer"><b>Telegram</b><small>Synced hourly from your Mac · open Telegram Web ↗</small></a>
+      <a class="app" href="https://www.instagram.com/direct/inbox/" target="_blank" rel="noopener noreferrer"><b>Instagram</b><small>Can connect later · open DMs ↗</small></a>
+      <a class="app" href="https://www.linkedin.com/messaging/" target="_blank" rel="noopener noreferrer"><b>LinkedIn</b><small>Synced hourly · open messages ↗</small></a>
+    </div>
+    <div class="rwrow"><button type="button" class="chip" data-writer="LinkedIn">Write a LinkedIn reply</button><button type="button" class="chip" data-writer="WhatsApp">Write a WhatsApp reply</button><button type="button" class="chip" data-writer="Telegram">Write a Telegram reply</button><button type="button" class="chip" data-writer="Email">Write an email reply</button></div>
+    <div class="canvas" id="cv-social"></div>
+    <p class="sempty" id="se-social" hidden></p>
+  </section>
+  <section class="sec" data-sec="claude" hidden aria-label="Claude">
+    <div class="sh"><h2>Claude</h2><button type="button" class="sc" aria-label="Close Claude">×</button></div>
+    <form class="cmd" id="cmd">
+      <textarea id="ask" rows="1" placeholder="Tell Claude what you need. For example: what needs my reply, prep me for Tuesday, draft a note to Pieter" aria-label="Ask Claude"></textarea>
+      <button class="brief" type="button" id="briefBtn" title="Claude pulls what matters right now into your sections">Brief me</button>
+      <button class="go" type="submit" id="goBtn">Ask</button>
+    </form>
+    <div class="sugg">
+      <button class="chip" type="button">Brief me</button>
+      <button class="chip" type="button">What needs my reply?</button>
+      <button class="chip" type="button">My week ahead</button>
+      <button class="chip" type="button">Draft a note to Pieter</button>
+    </div>
+    <details class="rw" id="rw">
+      <summary>Write a reply for me</summary>
+      <div class="rwb">
+        <div class="rwrow">
+          <div class="seg" role="group" aria-label="Where the reply goes" id="rwCh">
+            <button type="button" data-ch="Email" aria-pressed="true">Email</button>
+            <button type="button" data-ch="LinkedIn" aria-pressed="false">LinkedIn</button>
+            <button type="button" data-ch="WhatsApp" aria-pressed="false">WhatsApp</button>
+            <button type="button" data-ch="Telegram" aria-pressed="false">Telegram</button>
+          </div>
+        </div>
+        <textarea id="rwIn" rows="5" placeholder="Paste the message you received" aria-label="Message you received"></textarea>
+        <input type="text" id="rwWant" placeholder="What do you want to say? (optional) e.g. yes to Tuesday, send the quote Monday" aria-label="What you want to say">
+        <div class="rwrow"><button type="button" class="go small" id="rwGo">Write reply</button><span class="steps" id="rwNote"></span></div>
+        <div class="rwout" id="rwOut" hidden>
+          <div class="rwtext" id="rwText"></div>
+          <div id="rwChecks"></div>
+          <div class="rwrow">
+            <button type="button" class="chip" id="rwCopy">Copy</button>
+            <button type="button" class="chip" data-tweak="Make it shorter.">Shorter</button>
+            <button type="button" class="chip" data-tweak="Make it warmer and more personal.">Warmer</button>
+            <button type="button" class="chip" data-tweak="Make it more formal.">More formal</button>
+            <button type="button" class="chip" data-tweak="Write a different version.">Try again</button>
+          </div>
+        </div>
+      </div>
+    </details>
+    <div class="reply" id="reply" hidden aria-live="polite">
+      <div class="hd"><b>Claude</b><span class="steps" id="steps"></span><button class="x" type="button" id="logBtn">Conversation</button></div>
+      <p class="q" id="lastQ"></p>
+      <div class="body" id="answer"></div>
+      <div class="log" id="log" hidden></div>
+    </div>
+    <div class="canvas" id="cv-claude"></div>
+  </section>
+  <p class="foot">Claude reads your Gmail, Outlook, calendar and Teams and can save drafts. It never sends anything. <button type="button" id="clearAll">Clear workspace</button></p>
+</div>
+
+<section class="mus hide" id="mus" aria-label="Music player">
+  <div class="mus-h"><span>Avicii Essentials</span><span class="acts"><a id="musOpen" href="https://music.apple.com/ae/playlist/avicii-essentials/pl.d29a376c60b6430d9efff225cce78fa2" target="_blank" rel="noopener">Open in Music</a><button type="button" id="musHide" title="Hide, keep playing">Hide</button><button type="button" id="musStop" title="Stop and close">Stop</button></span></div>
+  <div id="musSlot"></div>
+  <div class="mus-note">Full songs play when you're signed in to Apple Music in this browser. Otherwise you get 30-second previews.</div>
+</section>
+<button type="button" class="fab" id="fab" aria-haspopup="dialog" aria-controls="pop"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="currentColor"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="currentColor"/></svg><span>Claude</span></button>
+<div class="pop" id="pop" hidden role="dialog" aria-modal="false" aria-labelledby="popTitle">
+  <div class="poph"><span class="spark"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="currentColor"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="currentColor"/></svg></span><div class="pt"><b id="popTitle">Claude</b><span id="popCtx">Ask anything, or finish a task here</span></div>
+    <button type="button" class="pbtn" id="popNew" title="Start a new chat">New</button><button type="button" class="pbtn x" id="popClose" aria-label="Close Claude chat">×</button></div>
+  <div class="pthread" id="pthread" aria-live="polite"></div>
+  <form class="pform" id="pform"><textarea id="pask" rows="1" placeholder="Message Claude" aria-label="Message Claude"></textarea><button type="submit" class="psend" id="psend">Send</button></form>
+  <p class="pfoot">Reads Gmail, Outlook, calendar and Teams. Saves drafts, never sends.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  var M365 = 'Microsoft 365';
+  var TEAM_BOARD = 'https://claude.ai/artifact/8GwGDwq8AAmCDmQAqEZjif';
+  var TEAM_FILES = 'https://drive.google.com/drive/folders/1ZeCn53_VgPlSZ0ybts4QlBoIxexRxjFh';
+
+  // ---------- clocks ----------
+  var OFFICES = [['Dubai','Asia/Dubai',true],['Riyadh','Asia/Riyadh'],['Cape Town','Africa/Johannesburg'],['London','Europe/London']];
+  function dubaiDay(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dubai' }); }
+  function tick(){
+    var now = new Date(), box = $('clocks'); box.textContent = '';
+    OFFICES.forEach(function(o){
+      var d = document.createElement('div'); d.className = 'clk' + (o[2] ? ' home' : '');
+      var b = document.createElement('b'); b.textContent = now.toLocaleTimeString('en-GB', { timeZone: o[1], hour: '2-digit', minute: '2-digit' });
+      var s = document.createElement('span'); s.textContent = o[0]; d.append(b, s); box.appendChild(d);
+    });
+    var h = +now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', hourCycle: 'h23' });
+    $('greet').textContent = (h < 5 ? 'Working late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', Yasser · ' + now.toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  tick(); setInterval(tick, 30000);
+
+  // ---------- small markdown ----------
+  function inline(el, s){
+    var re = /(\*\*[^*]+\*\*|`[^`]+`|https?:\/\/[^\s)]+)/g, last = 0, m;
+    while((m = re.exec(s))){
+      if(m.index > last) el.appendChild(document.createTextNode(s.slice(last, m.index)));
+      var t = m[0], n;
+      if(t.slice(0, 2) === '**'){ n = document.createElement('b'); n.textContent = t.slice(2, -2); }
+      else if(t[0] === '`'){ n = document.createElement('code'); n.textContent = t.slice(1, -1); }
+      else { n = document.createElement('a'); n.href = t; n.target = '_blank'; n.rel = 'noopener noreferrer'; n.textContent = t.length > 60 ? t.slice(0, 57) + '…' : t; }
+      el.appendChild(n); last = m.index + t.length;
+    }
+    if(last < s.length) el.appendChild(document.createTextNode(s.slice(last)));
+  }
+  function md(el, text){
+    el.textContent = '';
+    String(text || '').split(/\n{2,}/).forEach(function(bl){
+      var lines = bl.split('\n');
+      if(lines.every(function(l){ return /^\s*[-*•]\s+/.test(l) || !l.trim(); })){
+        var ul = document.createElement('ul');
+        lines.forEach(function(l){ if(!l.trim()) return; var li = document.createElement('li'); inline(li, l.replace(/^\s*[-*•]\s+/, '')); ul.appendChild(li); });
+        el.appendChild(ul);
+      } else {
+        var p = document.createElement('p');
+        lines.forEach(function(l, i){ if(i) p.appendChild(document.createElement('br')); inline(p, l.replace(/^#+\s*/, '')); });
+        el.appendChild(p);
+      }
+    });
+  }
+
+  // ---------- Microsoft 365 results ----------
+  // The connector can answer with several JSON objects in one text block; read them all.
+  function jsonObjects(text){
+    var out = [], depth = 0, start = -1, inStr = false, esc = false;
+    for(var i = 0; i < text.length; i++){
+      var c = text[i];
+      if(inStr){ if(esc) esc = false; else if(c === '\\') esc = true; else if(c === '"') inStr = false; continue; }
+      if(c === '"'){ inStr = true; continue; }
+      if(c === '{'){ if(depth === 0) start = i; depth++; }
+      else if(c === '}'){ depth--; if(depth === 0 && start >= 0){ try { out.push(JSON.parse(text.slice(start, i + 1))); } catch(e){} start = -1; } }
+    }
+    return out;
+  }
+  function resultObjects(r){
+    var objs = [];
+    if(r && r.payload && typeof r.payload === 'object'){
+      if(Array.isArray(r.payload)) objs = r.payload.slice();
+      else if(Array.isArray(r.payload.value)) objs = r.payload.value.slice();
+      else objs = [r.payload];
+    }
+    if(!objs.length && r && Array.isArray(r.content)){
+      r.content.forEach(function(b){ if(b && b.type === 'text' && b.text) objs = objs.concat(jsonObjects(b.text)); });
+    }
+    return objs.filter(function(o){ return o && typeof o === 'object' && !('nextOffset' in o && Object.keys(o).length <= 3) && !('moreResults' in o); });
+  }
+  function textOf(html){
+    var d = document.createElement('div'); d.innerHTML = String(html || '').replace(/<(br|\/p|\/div|\/tr|\/h\d)[^>]*>/gi, '\n');
+    return (d.textContent || '').replace(/[ \t ]+/g, ' ').replace(/\n\s*\n\s*\n+/g, '\n\n').trim();
+  }
+  function who(x){ if(!x) return ''; if(typeof x === 'string') return x; if(x.emailAddress) x = x.emailAddress; return x.name ? x.name + (x.address ? ' <' + x.address + '>' : '') : (x.address || ''); }
+
+  var mcp = null, sample = null, db = null;
+  function m365(tool, input, signal){
+    return mcp.callTool(M365, tool, input, signal ? { signal: signal } : undefined).then(function(r){ markM365(true); return r; }, function(e){ markM365(false, e); throw new Error(m365Copy(e)); });
+  }
+  function m365Copy(e){
+    switch(e && e.code){
+      case 'needs_reauth': return 'Microsoft 365 needs reconnecting in claude.ai Settings, Connectors.';
+      case 'server_not_connected': case 'server_not_found': return 'Microsoft 365 is not connected. Add it in claude.ai Settings, Connectors.';
+      case 'not_in_manifest': return 'Microsoft 365 is switched off for this page.';
+      case 'selection_required': return 'Choose which Microsoft 365 account to use in the claude.ai prompt.';
+      case 'blocked_by_policy': case 'approval_required': return 'Organisation settings block this Microsoft 365 action.';
+      default: return (e && e.message) || 'Microsoft 365 did not answer.';
+    }
+  }
+  var decoder = document.createElement('textarea');
+  function decode(s){ decoder.innerHTML = String(s || ''); return decoder.value; }
+  function gmail(tool, input, signal){
+    return mcp.callTool('Gmail', tool, input, signal ? { signal: signal } : undefined).then(function(r){ markPill('gPill', true); return r; }, function(e){ var msg = m365Copy(e).replace(/Microsoft 365/g, 'Gmail'); markPill('gPill', false, msg); throw new Error(msg); });
+  }
+  function markPill(id, ok, msg){ var p = $(id); p.className = 'src-pill ' + (ok ? 'ok' : 'bad'); p.title = ok ? 'Connected' : (msg || ''); }
+  function markM365(ok, e){
+    var p = $('m365Pill'); p.className = 'src-pill ' + (ok ? 'ok' : 'bad');
+    p.title = ok ? 'Outlook connected' : m365Copy(e);
+  }
+
+  // ---------- cards (saved in this page's private store) ----------
+  var cards = {}, memOnly = false;
+  function cardList(){ return Object.keys(cards).map(function(k){ return cards[k]; }).sort(function(a, b){ return (a.order || 0) - (b.order || 0); }); }
+  function slug(s){ return String(s || 'card').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'card'; }
+  function saveCard(c){
+    cards[c.key] = c; renderCanvas();
+    if(db && !memOnly) return db.collection('cards').doc(c.key).set(c).catch(function(){ memOnly = true; persistLocal(); });
+    persistLocal(); return Promise.resolve();
+  }
+  function removeCard(key){
+    delete cards[key]; renderCanvas();
+    if(db && !memOnly) return db.collection('cards').doc(key).delete().catch(function(){});
+    persistLocal(); return Promise.resolve();
+  }
+  function persistLocal(){ lsSet('cc-cards', JSON.stringify(cards)); }
+  function loadLocal(){ try { cards = JSON.parse(lsGet('cc-cards') || '{}') || {}; } catch(e){ cards = {}; } }
+
+  function fmtWhen(v){
+    if(!v) return '';
+    var d = new Date(v); if(isNaN(d)) return String(v);
+    var now = new Date(), same = d.toDateString() === now.toDateString();
+    var t = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', minute: '2-digit' });
+    if(same) return t;
+    return d.toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'short', day: 'numeric', month: 'short' }) + (/T\d/.test(String(v)) ? ', ' + t : '');
+  }
+  var SECS = ['todo', 'email', 'calendar', 'team', 'social', 'claude'];
+  function secOf(c){ var s0 = String(c.source || '').toLowerCase(); if(s0 === 'todo') return 'todo'; if(s0 === 'gmail' || s0 === 'outlook' || s0 === 'email') return 'email'; if(s0 === 'calendar') return 'calendar'; if(s0 === 'teams' || s0 === 'team') return 'team'; if(s0 === 'social' || s0 === 'instagram' || s0 === 'whatsapp' || s0 === 'linkedin') return 'social'; return 'claude'; }
+  var SEC_EMPTY = { todo: 'Your tasks from the team board appear here within the hour.', email: 'Nothing pulled yet. Press Refresh or ask Claude.', calendar: 'Nothing pulled yet. Press Refresh or ask Claude.', team: 'Team chat and updates appear here within the hour.', social: 'LinkedIn, WhatsApp and Telegram refresh every hour. Instagram opens from here.', claude: '' };
+  // ---- posting rhythm: live days since last post
+  var POST_EVERY = 7;
+  function daysSince(iso){ if(!iso) return null; var a = new Date(dubaiDay() + 'T00:00:00Z'), b = new Date(String(iso).slice(0, 10) + 'T00:00:00Z'); if(isNaN(b)) return null; return Math.round((a - b) / 86400000); }
+  function postState(it){
+    var every = +it.every || POST_EVERY, d = daysSince(it.lastPost);
+    if(d === null) return { d: null, pr: 'med', line: 'Last post date not known yet' };
+    var left = every - d, ago = d === 0 ? 'today' : d === 1 ? 'yesterday' : d + ' days ago';
+    return { d: d, pr: left <= 0 ? 'high' : left <= 2 ? 'med' : 'low', due: left <= 0,
+      line: 'Last post ' + ago + (left <= 0 ? ' · time for a new one' : ' · next one due in ' + left + (left === 1 ? ' day' : ' days')) };
+  }
+  function markPosted(c, it){
+    var nc = JSON.parse(JSON.stringify(c));
+    nc.items.forEach(function(x){ if(x.title === it.title){ x.lastPost = dubaiDay(); x.lastPostTitle = 'Marked as posted from the Command Centre'; } });
+    nc.pulledAt = new Date().toISOString(); saveCard(nc);
+  }
+  function paintPostPill(){
+    var pc = cards['posting-rhythm'], pill = $('postPill'); if(!pill) return;
+    var due = pc && Array.isArray(pc.items) ? pc.items.filter(function(x){ return postState(x).due; }).map(function(x){ return x.title; }) : [];
+    pill.hidden = !due.length; pill.textContent = due.length ? 'Time to post: ' + due.join(' + ') : '';
+  }
+
+  function renderCanvas(){
+    var list = cardList();
+    SECS.forEach(function(k){ var el = $('cv-' + k); if(el) el.textContent = ''; });
+    var counts = {}; SECS.forEach(function(k){ counts[k] = 0; });
+    list.forEach(function(c){
+      var sk = secOf(c), cv = $('cv-' + sk); if(!cv) return;
+      counts[sk] += c.key === 'posting-rhythm' ? (c.items || []).filter(function(it){ return postState(it).due; }).length : (Array.isArray(c.items) && c.items.length) ? c.items.filter(function(it){ return it.priority === 'high' || it.priority === 'med'; }).length || c.items.length : 1;
+      var el = document.createElement('article'); el.className = 'card' + (c.wide ? ' wide' : '');
+      el.innerHTML = '<div class="ch"><div style="min-width:0"><h3></h3><div class="meta"></div></div><div class="tools"><button type="button" class="rf" title="Pull again" aria-label="Pull this card again">↻</button><button type="button" class="rm" title="Remove" aria-label="Remove this card">×</button></div></div>';
+      el.querySelector('h3').textContent = c.title || 'Untitled';
+      var meta = el.querySelector('.meta');
+      var src = String(c.source || 'claude').toLowerCase(), bd = document.createElement('span');
+      bd.className = 'badge ' + (['outlook','gmail','calendar','teams','claude','todo','social','team'].indexOf(src) >= 0 ? src : 'claude'); bd.textContent = (src === 'todo' || src === 'team') ? 'team board' : src;
+      meta.appendChild(bd);
+      var tm = document.createElement('span'); tm.textContent = 'Pulled ' + fmtWhen(c.pulledAt); meta.appendChild(tm);
+      el.querySelector('.rm').addEventListener('click', function(){ removeCard(c.key); });
+      el.querySelector('.rf').addEventListener('click', function(){ ask('Pull the "' + c.title + '" card again with fresh data and replace it (key ' + c.key + '). Original request: ' + (c.request || c.title)); });
+      if(c.summary){ var s = document.createElement('div'); s.className = 'sum'; md(s, c.summary); el.appendChild(s); }
+      if(Array.isArray(c.items) && c.items.length){
+        var ul = document.createElement('ul'); ul.className = 'items';
+        c.items.forEach(function(it0){
+          var it = it0, isPost = c.key === 'posting-rhythm';
+          if(isPost){ var ps = postState(it0); it = Object.assign({}, it0, { priority: ps.pr, subtitle: ps.line + (it0.lastPostTitle ? ' \u00b7 \u201c' + it0.lastPostTitle + '\u201d' : ''), when: it0.lastPost || '' }); }
+          var li = document.createElement('li'); li.className = 'item';
+          li.innerHTML = '<span class="flag"></span><div style="min-width:0"><b></b><small></small></div><span class="when"></span>';
+          if(it.priority) li.querySelector('.flag').classList.add(String(it.priority));
+          li.querySelector('b').textContent = it.title || '';
+          var sm = li.querySelector('small'); if(it.subtitle) sm.textContent = it.subtitle; else sm.remove();
+          li.querySelector('.when').textContent = it.when ? fmtWhen(it.when) : '';
+          var acts = document.createElement('div'); acts.className = 'acts';
+          if(it.url && /^https:\/\//.test(it.url)){ var a = document.createElement('a'); a.className = 'mini'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = it.linkLabel || 'Open ↗'; acts.appendChild(a); }
+          if(it.messageId || it.threadId){
+            var ref = it.mailbox === 'gmail' || (!it.uri && it.threadId) ? 'Gmail threadId ' + (it.threadId || '') + ', messageId ' + (it.messageId || '') : 'Outlook uri ' + (it.uri || '') + ', messageId ' + (it.messageId || '');
+            var r1 = document.createElement('button'); r1.type = 'button'; r1.className = 'mini'; r1.textContent = 'Summarise';
+            r1.addEventListener('click', function(){ ask('Read the email "' + it.title + '" (' + ref + ') and summarise it in 3 lines with what I need to do.'); });
+            var r2 = document.createElement('button'); r2.type = 'button'; r2.className = 'mini'; r2.textContent = 'Draft reply';
+            r2.addEventListener('click', function(){ ask('Read the email "' + it.title + '" (' + ref + ') and save a reply draft in my voice in the same mailbox. Show me the text.'); });
+            acts.append(r1, r2);
+          }
+          if(isPost){
+            var dp = document.createElement('button'); dp.type = 'button'; dp.className = 'mini claude'; dp.textContent = 'Draft a post';
+            dp.addEventListener('click', function(){
+              doWithClaude('New ' + it.title + ' post', 'Help me write a new ' + it.title + ' post for my own account (' + (it.url || it.title) + '). My last one was ' + (it0.lastPost || 'a while ago') + (it0.lastPostTitle ? ', about: "' + it0.lastPostTitle + '"' : '') + '. First give me 3 short angle ideas that fit how I usually post (a.k.a. Media, production in the Gulf, Southern Africa and Europe, festivals, film finance, lessons from the work) and do not repeat my recent topics. Look at my recent emails and calendar for real, shareable things that happened this week, but never mention clients, deals, prices or anything confidential unless I say so. After I pick one, write the post in my voice' + (it.title === 'Instagram' ? ' as an Instagram caption with a few hashtags and a note on what photo or video to use' : ' for LinkedIn, short paragraphs, with hashtags at the end') + '. This is public, so check every name, date and fact, put anything you are unsure of in [brackets], and use propose_draft with mailbox none so I can copy it.');
+            });
+            var mp = document.createElement('button'); mp.type = 'button'; mp.className = 'mini'; mp.textContent = 'I just posted';
+            mp.addEventListener('click', function(){ mp.disabled = true; markPosted(c, it0); });
+            acts.append(dp, mp);
+          }
+          if(!isPost && (secOf(c) === 'email' || secOf(c) === 'social') && !it.messageId && !it.threadId){
+            var wr = document.createElement('button'); wr.type = 'button'; wr.className = 'mini'; wr.textContent = 'Write reply';
+            var chn = secOf(c) !== 'social' ? 'Email' : /whatsapp/.test(c.key) ? 'WhatsApp' : /telegram/.test(c.key) ? 'Telegram' : 'LinkedIn';
+            wr.addEventListener('click', function(){ openWriter((chn === 'Email' ? 'Email: ' : chn + ' message from ') + (it.title || '') + (it.subtitle ? '\n' + it.subtitle : '') + '\n\n', chn); });
+            acts.appendChild(wr);
+          }
+          var dsec = secOf(c);
+          if(!isPost && (dsec === 'todo' || dsec === 'email' || dsec === 'social' || dsec === 'calendar') && it.title && !/^Open the team chat$/.test(it.title)){
+            var dw = document.createElement('button'); dw.type = 'button'; dw.className = 'mini claude'; dw.textContent = 'Do it with Claude';
+            dw.addEventListener('click', function(){
+              var ttl = it.title, sub = it.subtitle ? ' (' + it.subtitle + ')' : '';
+              var ref = it.threadId ? ' Gmail threadId ' + it.threadId + (it.messageId ? ', messageId ' + it.messageId : '') + '.' : it.uri ? ' Outlook uri ' + it.uri + (it.messageId ? ', messageId ' + it.messageId : '') + '.' : '';
+              var prompt, label;
+              if(dsec === 'todo'){ label = 'Task: ' + ttl; prompt = 'Help me get this task from my to-do list done right now: "' + ttl + '"' + (it.when ? ' (due ' + it.when + ')' : '') + sub + '. Work out what it needs, look up any emails or context you need, draft any email as a draft in the right mailbox, and ask me for anything only I know. Keep each step short and tell me when it is ready to tick off on the team board.'; }
+              else if(dsec === 'email'){ label = 'Email: ' + ttl; prompt = 'Help me deal with this email now: "' + ttl + '"' + sub + '.' + ref + (ref ? ' Read it first.' : ' It is in my akamedia.ae work inbox, which you cannot open, so work from these details and ask me to paste the text if you need it.') + ' Tell me in two lines what it needs from me, then write a short human reply in my voice and save it as a draft in the same mailbox if you can.'; }
+              else if(dsec === 'social'){ label = 'LinkedIn: ' + ttl; prompt = 'Help me reply to this LinkedIn message from ' + ttl + sub + '. You cannot open LinkedIn, so work from this; ask me to paste the message if you need more. Write a short, human LinkedIn reply in my voice that I can paste.'; }
+              else { label = 'Meeting: ' + ttl; prompt = 'Help me prepare for this: "' + ttl + '"' + sub + (it.when ? ' at ' + it.when : '') + '. Pull any related emails, give me a short brief and anything I should send beforehand as drafts.'; }
+              doWithClaude(label, prompt);
+            });
+            acts.appendChild(dw);
+          }
+          if(secOf(c) === 'email' && !it.queued){
+            var pm = document.createElement('button'); pm.type = 'button'; pm.className = 'mini';
+            var gm = it.mailbox === 'gmail' || (!!it.threadId && !it.uri);
+            pm.textContent = 'To Promotions'; pm.title = gm ? 'Move this Gmail thread to the Promotions tab' : 'Move this email to Other in Outlook at the next hourly sync';
+            pm.addEventListener('click', function(){ toPromos(c, it, gm, pm); });
+            acts.appendChild(pm);
+          }
+          if(it.queued){ var qn = document.createElement('small'); qn.className = 'qn'; qn.textContent = it.queued === 'failed' ? 'Couldn\u2019t move to Other. Try again or move it in Outlook.' : 'Moving to Other in Outlook at the next sync'; acts.appendChild(qn); }
+          if(acts.children.length) li.appendChild(acts);
+          ul.appendChild(li);
+        });
+        el.appendChild(ul);
+      }
+      if(c.text){ var tx = document.createElement('div'); tx.className = 'text body'; md(tx, c.text); el.appendChild(tx); }
+      cv.appendChild(el);
+    });
+    SECS.forEach(function(k){
+      var b = document.querySelector('.dk[data-sec="' + k + '"] .n'); if(b){ b.hidden = !counts[k]; b.textContent = counts[k] > 99 ? '99+' : counts[k]; }
+      var e = $('se-' + k); if(e){ var has = $('cv-' + k).children.length > 0; e.hidden = has || !SEC_EMPTY[k]; e.textContent = SEC_EMPTY[k]; }
+    });
+    paintPostPill();
+  }
+  // sections: nothing open until chosen
+  var openSecs = [];
+  try { openSecs = JSON.parse(lsGet('cc-open') || '[]') || []; } catch(e){ openSecs = []; }
+  function paintSecs(){
+    SECS.forEach(function(k){
+      var on = openSecs.indexOf(k) >= 0;
+      var b = document.querySelector('.dk[data-sec="' + k + '"]'); if(b) b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var s1 = document.querySelector('.sec[data-sec="' + k + '"]'); if(s1) s1.hidden = !on;
+    });
+    $('blank').hidden = openSecs.length > 0;
+    lsSet('cc-open', JSON.stringify(openSecs));
+  }
+  function openSec(k){ if(openSecs.indexOf(k) < 0) openSecs.push(k); openSecs.sort(function(a, b){ return SECS.indexOf(a) - SECS.indexOf(b); }); paintSecs(); }
+  (function(){ var pp = document.getElementById('postPill'); if(pp) pp.addEventListener('click', function(){ openSec('social'); var s1 = document.querySelector('.sec[data-sec="social"]'); if(s1) s1.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); })();
+  function toggleSec(k){ var i = openSecs.indexOf(k); if(i >= 0) openSecs.splice(i, 1); else { openSec(k); var s1 = document.querySelector('.sec[data-sec="' + k + '"]'); if(s1) s1.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } paintSecs(); }
+  Array.prototype.forEach.call(document.querySelectorAll('.dk'), function(b){ b.addEventListener('click', function(){ toggleSec(b.dataset.sec); if(b.dataset.sec === 'claude') setTimeout(function(){ $('ask').focus(); }, 50); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.sec .sc'), function(b){ b.addEventListener('click', function(){ var k = b.closest('.sec').dataset.sec; var i = openSecs.indexOf(k); if(i >= 0){ openSecs.splice(i, 1); paintSecs(); } }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.sec .sr'), function(b){ b.addEventListener('click', function(){ ask(b.dataset.ask); }); });
+  paintSecs();
+  if(lsGet('cc-pop') === '1') setTimeout(function(){ openPop(); }, 0);
+
+  // ---------- Claude ----------
+  var history = [], busy = null, currentRequest = '';
+  try { history = JSON.parse(lsGet('cc-history') || '[]') || []; } catch(e){ history = []; }
+  function saveHistory(){ lsSet('cc-history', JSON.stringify(history.slice(-16))); }
+
+  function rules(){
+    var list = cardList().map(function(c){ return '- ' + c.key + ': "' + c.title + '" (' + (c.source || 'claude') + ', pulled ' + c.pulledAt + ', ' + ((c.items || []).length) + ' items)'; }).join('\n') || '(empty)';
+    return 'You run Yasser Obeid\'s private Command Centre, a blank workspace you fill with cards. Yasser is founder and CEO of a.k.a. Media, a production company with offices in Dubai, Abu Dhabi, Riyadh and Cape Town. Team: Pieter (production, all offices), Andrei and Mich (post), Srijeeth (finance). He has two mailboxes: Gmail (yasser.khasan@gmail.com, personal and many business contacts) and Outlook (Microsoft 365, a.k.a. Media work account). Check both unless he names one, and label each card or item with the mailbox it came from.\n'
+      + 'Now: ' + new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' Dubai time (' + new Date().toISOString() + ').\n'
+      + 'Everything Yasser sends is client-facing: be exact. Never state a fact, name, date, price, attachment or promise that is not in the source or in what Yasser told you; leave a [bracket] instead.\n' + 'Tools: search_gmail, read_gmail for Gmail; search_email, read_email for Outlook; propose_draft for every email or message you write (client-facing: it is triple checked and Yasser saves it himself, so never claim a draft was saved); search_calendar, search_teams for Outlook calendar and Teams; pin_card, remove_card to change the workspace. Drafts never send; only draft when asked, and in the mailbox the email came from.\n'
+      + 'The workspace starts empty; Yasser opens sections from a row of buttons: Email (cards with source gmail or outlook), Calendar (source calendar), Team (source teams: Microsoft Teams and team matters), Social (source social), Claude (source claude: notes, drafts, plans). Choose each card\'s source so it lands in the right section.\n' + 'How to work: decide yourself what to pull. Put anything Yasser should see or act on into cards with pin_card: one card per topic, only what matters, most urgent first, each item with a short title, one-line subtitle, time, priority (high/med/low) and url (webLink) when there is one. For emails also pass mailbox plus messageId and uri (Outlook) or threadId (Gmail) so the card can offer Summarise and Draft reply. In Gmail skip promotions, social and automated notifications unless asked (use category:primary). Replace a card by reusing its key. Remove cards that are stale or no longer asked for. If a source returns nothing, say so in a one-line card summary rather than inventing content. Never invent emails, meetings or people.\n'
+      + 'Useful links you may pin: Team board ' + TEAM_BOARD + ' (everyone\'s to-do lists and team chat), Team files ' + TEAM_FILES + ' (Google Drive folder AKATEAMFILEEXCHANGE), Outlook https://outlook.office.com/mail/ , Calendar https://outlook.office.com/calendar/ .\n'
+      + 'Reply in the chat briefly: two or three sentences saying what you pulled or did, plain words, no headings. Emails in Yasser\'s voice: direct, warm, short, signed "Yasser".\n'
+      + 'His real work mailbox is yasser@akamedia.ae (Namecheap, read in the Outlook app on his Mac). You cannot reach it with tools; a card with key outlook-work is refreshed from that Outlook app every hour. Never remove or replace the outlook-work card. The cards with keys todo-mine (his to-do list) and team-chat (recent team chat) are copied from the team board every hour: never remove or replace them, and use them when briefing. Cards with keys whatsapp-chats and telegram-chats are refreshed hourly from those apps on his Mac: never remove or replace them. A card with key posting-rhythm tracks when he last posted on LinkedIn and Instagram and is refreshed daily: never remove or replace it; if he has not posted for a week, mention it in the brief. Anything he will post publicly is public-facing, so it gets the same checks as a client email. Likewise a card with key linkedin-inbox is refreshed every hour from LinkedIn in his Chrome: never remove or replace it, and use it for LinkedIn messages. Use its items as his work email when briefing, and put work items first.\n'
+      + 'Cards now on the workspace:\n' + list;
+  }
+  function tools(step, signal){
+    return [
+      { name: 'search_email', description: 'Search Yasser\'s Outlook mailbox. Filters: query (keywords; cannot be combined with order), sender, afterDateTime/beforeDateTime (natural language ok, e.g. "3 days ago"), folderName (e.g. Inbox), order ("newest", Inbox only, not with query), limit (max 25). Returns [{id, uri, subject, from, received, preview, isRead, importance, hasAttachments, webLink}].',
+        inputSchema: { type: 'object', properties: { query: { type: 'string' }, sender: { type: 'string' }, afterDateTime: { type: 'string' }, beforeDateTime: { type: 'string' }, folderName: { type: 'string' }, order: { type: 'string', enum: ['newest', 'oldest'] }, limit: { type: 'number' } } },
+        execute: function(input){
+          step('Searching Outlook…');
+          var a = {}; ['query','sender','afterDateTime','beforeDateTime','folderName','order'].forEach(function(k){ if(input[k]) a[k] = String(input[k]); });
+          if(a.query && a.order) delete a.order;
+          a.limit = Math.min(25, Math.max(1, Number(input.limit) || 15));
+          return m365('outlook_email_search', a, signal).then(function(r){
+            return resultObjects(r).filter(function(o){ return o.subject !== undefined || o.id; }).map(function(o){
+              return { id: o.id, uri: o.uri, subject: o.subject, from: who(o.sender || o.from), received: o.receivedDateTime, preview: String(o.summary || o.bodyPreview || '').replace(/\s+/g, ' ').slice(0, 220), isRead: o.isRead, importance: o.importance, hasAttachments: o.hasAttachments, webLink: o.webLink };
+            });
+          });
+        } },
+      { name: 'read_email', description: 'Read one Outlook email in full by its uri (mail:///messages/...). Returns {id, subject, from, to, cc, received, body, webLink, conversationId}.',
+        inputSchema: { type: 'object', properties: { uri: { type: 'string' } }, required: ['uri'] },
+        execute: function(input){
+          step('Reading the email…');
+          return m365('read_resource', { uri: String(input.uri || '') }, signal).then(function(r){
+            var o = resultObjects(r)[0] || {};
+            var body = o.body && o.body.contentType === 'html' ? textOf(o.body.content) : String((o.body && o.body.content) || o.bodyPreview || '');
+            return { id: o.id, subject: o.subject, from: who(o.sender || o.from), to: (o.toRecipients || []).map(who), cc: (o.ccRecipients || []).map(who), received: o.receivedDateTime, body: body.slice(0, 9000), webLink: o.webLink, conversationId: o.conversationId };
+          });
+        } },
+      { name: 'search_calendar', description: 'Search Yasser\'s Outlook calendar. afterDateTime/beforeDateTime accept natural language ("today", "tomorrow", "next Monday"). query "*" for everything. Returns up to 25 events with subject, start, end, location, attendees, webLink, uri.',
+        inputSchema: { type: 'object', properties: { afterDateTime: { type: 'string' }, beforeDateTime: { type: 'string' }, query: { type: 'string' }, limit: { type: 'number' } } },
+        execute: function(input){
+          step('Checking the calendar…');
+          var a = { query: String(input.query || '*'), limit: Math.min(25, Math.max(1, Number(input.limit) || 15)) };
+          if(input.afterDateTime) a.afterDateTime = String(input.afterDateTime);
+          if(input.beforeDateTime) a.beforeDateTime = String(input.beforeDateTime);
+          return m365('outlook_calendar_search', a, signal).then(function(r){
+            var ev = resultObjects(r).filter(function(o){ return o.subject !== undefined || o.start; }).map(function(o){
+              return { subject: o.subject, start: o.start, end: o.end, location: o.location && (o.location.displayName || o.location), organizer: who(o.organizer), attendees: (o.attendees || []).slice(0, 12).map(who), isOnline: o.isOnlineMeeting, webLink: o.webLink, uri: o.uri };
+            });
+            return ev.length ? ev : 'No events in that range.';
+          });
+        } },
+      { name: 'search_teams', description: 'Search Microsoft Teams chat and channel messages Yasser can see. query is keywords or "*"; optional sender, afterDateTime (e.g. "2 days ago"). Returns up to 25 messages.',
+        inputSchema: { type: 'object', properties: { query: { type: 'string' }, sender: { type: 'string' }, afterDateTime: { type: 'string' }, limit: { type: 'number' } } },
+        execute: function(input){
+          step('Checking Teams…');
+          var a = { query: String(input.query || '*'), limit: Math.min(25, Math.max(1, Number(input.limit) || 15)) };
+          if(input.sender) a.sender = String(input.sender);
+          if(input.afterDateTime) a.afterDateTime = String(input.afterDateTime);
+          return m365('chat_message_search', a, signal).then(function(r){
+            var list = resultObjects(r).map(function(o){ var c = {}; ['from','sender','summary','subject','createdDateTime','sentDateTime','webUrl','webLink','chatId','uri'].forEach(function(k){ if(o[k] !== undefined) c[k] = typeof o[k] === 'object' ? who(o[k].user || o[k]) : o[k]; }); if(o.body) c.body = textOf(o.body.content || o.body).slice(0, 400); return c; });
+            return list.length ? list : 'No Teams messages found.';
+          });
+        } },
+      { name: 'search_gmail', description: 'Search Yasser\'s Gmail with Gmail syntax (in:inbox category:primary newer_than:3d, is:unread, from:, subject:, is:starred). Returns up to 20 threads [{threadId, lastMessageId, from, subject, snippet, date, unread, important, url}].',
+        inputSchema: { type: 'object', properties: { query: { type: 'string' }, limit: { type: 'number' } }, required: ['query'] },
+        execute: function(input){
+          step('Searching Gmail…');
+          return gmail('search_threads', { query: String(input.query || ''), pageSize: Math.min(20, Math.max(1, Number(input.limit) || 15)) }, signal).then(function(r){
+            var list = (r.payload && r.payload.threads) || [];
+            return list.map(function(t){
+              var ms = t.messages || [], last = ms[ms.length - 1] || {}, first = ms[0] || {}, lab = [].concat.apply([], ms.map(function(m){ return m.labelIds || []; }));
+              return { threadId: t.id, lastMessageId: last.id, from: last.sender || first.sender, subject: decode(first.subject || last.subject), snippet: decode(last.snippet || '').slice(0, 220), date: last.date, unread: lab.indexOf('UNREAD') >= 0, important: lab.indexOf('IMPORTANT') >= 0, url: t.viewUrl };
+            });
+          });
+        } },
+      { name: 'read_gmail', description: 'Read a Gmail thread in full by threadId. Returns its last messages with id, sender, recipients, date, subject and plain-text body.',
+        inputSchema: { type: 'object', properties: { threadId: { type: 'string' } }, required: ['threadId'] },
+        execute: function(input){
+          step('Reading the Gmail thread…');
+          return gmail('get_thread', { threadId: String(input.threadId || ''), messageFormat: 'PLAIN_TEXT' }, signal).then(function(r){
+            var ms = (r.payload && r.payload.messages) || [];
+            return ms.slice(-5).map(function(m){ return { id: m.id, from: m.sender, to: m.toRecipients, cc: m.ccRecipients, date: m.date, subject: m.subject, body: String(m.plaintextBody || m.snippet || '').replace(/\n{3,}/g, '\n\n').slice(0, 5000) }; });
+          });
+        } },
+      { name: 'pin_card', description: 'Add or replace a card on the workspace. key: short stable id (reuse to replace). source: gmail or outlook (Email section), calendar, teams (Team section), social, or claude (notes, drafts, plans). summary: one or two lines. items: up to 12 rows {title, subtitle, when (ISO time), priority (high|med|low), url, linkLabel; for emails also mailbox (gmail|outlook), messageId, and uri (Outlook) or threadId (Gmail)}. text: optional free text for notes or a draft. wide: true for a double-width card.',
+        inputSchema: { type: 'object', properties: { key: { type: 'string' }, title: { type: 'string' }, source: { type: 'string' }, summary: { type: 'string' }, text: { type: 'string' }, wide: { type: 'boolean' },
+          items: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, subtitle: { type: 'string' }, when: { type: 'string' }, priority: { type: 'string' }, url: { type: 'string' }, linkLabel: { type: 'string' }, mailbox: { type: 'string', enum: ['gmail', 'outlook'] }, messageId: { type: 'string' }, uri: { type: 'string' }, threadId: { type: 'string' } } } } }, required: ['title'] },
+        execute: function(input){
+          var key = slug(input.key || input.title);
+          step('Pinning "' + String(input.title || '').slice(0, 40) + '"…');
+          var existing = cards[key];
+          var items = Array.isArray(input.items) ? input.items.slice(0, 12).map(function(it){
+            var o = {}; ['title','subtitle','when','priority','url','linkLabel','messageId','uri','threadId','mailbox'].forEach(function(k){ if(it && it[k] !== undefined && it[k] !== null) o[k] = String(it[k]).slice(0, k === 'uri' || k === 'url' ? 900 : 300); });
+            if(o.priority && ['high','med','low'].indexOf(o.priority) < 0) delete o.priority;
+            return o;
+          }) : [];
+          var order = existing ? existing.order : (cardList().reduce(function(m, c){ return Math.min(m, c.order || 0); }, 0) - 1);
+          var c = { key: key, title: String(input.title || 'Untitled').slice(0, 120), source: String(input.source || 'claude').toLowerCase(), summary: input.summary ? String(input.summary).slice(0, 600) : '', text: input.text ? String(input.text).slice(0, 6000) : '', items: items, wide: !!input.wide, pulledAt: new Date().toISOString(), request: currentRequest.slice(0, 400), order: order };
+          return saveCard(c).then(function(){ return { pinned: key }; });
+        } },
+      { name: 'remove_card', description: 'Remove a card from the workspace by key.', inputSchema: { type: 'object', properties: { key: { type: 'string' } }, required: ['key'] },
+        execute: function(input){ step('Tidying the workspace…'); return removeCard(slug(input.key)).then(function(){ return { removed: slug(input.key) }; }); } },
+      { name: 'propose_draft', description: 'Prepare a client-facing draft for Yasser to review. It is NOT saved: the page runs three independent checks (facts vs the source, names/dates/numbers/promises, tone/recipient) and Yasser reads it and saves it himself. Use for every email or message you write for him. mailbox: "gmail", "outlook", or "none" (work inbox in the Outlook app, LinkedIn, WhatsApp: he copies it). kind: "reply" or "new". For a Gmail reply pass threadId and replyToMessageId (the thread\'s lastMessageId) and the sender in to. For an Outlook reply pass messageId and uri. basis: REQUIRED, the exact source you relied on: the original message text (quote it) plus anything Yasser told you in this chat. body: plain text, no markdown.',
+        inputSchema: { type: 'object', properties: { mailbox: { type: 'string', enum: ['gmail', 'outlook', 'none'] }, kind: { type: 'string', enum: ['reply', 'new'] }, to: { type: 'array', items: { type: 'string' } }, cc: { type: 'array', items: { type: 'string' } }, subject: { type: 'string' }, body: { type: 'string' }, threadId: { type: 'string' }, replyToMessageId: { type: 'string' }, messageId: { type: 'string' }, uri: { type: 'string' }, basis: { type: 'string' }, channel: { type: 'string', description: 'Email, LinkedIn or WhatsApp' } }, required: ['mailbox', 'body', 'basis'] },
+        execute: function(input){
+          step('Preparing the draft for your checks…');
+          proposeDraft(input);
+          return { status: 'shown_for_review', note: 'Not saved. The page is running three independent checks and Yasser will review and save it himself. Do not say it was saved or sent. Briefly tell him it is ready for his review below.' };
+        } }
+    ];
+  }
+  function copyFor(code){
+    switch(code){
+      case 'not_granted': case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed': return 'Claude isn’t allowed on this page for your account.';
+      case 'rate_limited': return 'You’ve hit your usage limit for now. Try again later.';
+      case 'session_expired': return 'Your claude.ai session expired. Sign in again and reload.';
+      case 'prompt_too_large': return 'That was too much at once. Ask about fewer things.';
+      case 'refused': return 'Claude couldn’t help with that request.';
+      case 'tools_unavailable': return 'This view can’t run the workspace tools. Open the page in claude.ai.';
+      default: return 'That didn’t go through. Try again.';
+    }
+  }
+  function renderLog(){
+    var lg = $('log'); lg.textContent = '';
+    history.forEach(function(t){ var d = document.createElement('div'); d.className = t.role === 'user' ? 'u' : 'a body'; if(t.role === 'user') d.textContent = t.content; else md(d, t.content); lg.appendChild(d); });
+    lg.scrollTop = lg.scrollHeight;
+  }
+  $('logBtn').addEventListener('click', function(){ var lg = $('log'); lg.hidden = !lg.hidden; if(!lg.hidden) renderLog(); });
+
+  // ---- pop-up Claude chat
+  function popOpen(){ return !$('pop').hidden; }
+  function openPop(ctx){
+    $('pop').hidden = false; document.body.classList.add('pop-on'); lsSet('cc-pop', '1');
+    if(ctx) $('popCtx').textContent = ctx;
+    renderPop(); setTimeout(function(){ $('pask').focus(); }, 30);
+  }
+  function closePop(){ $('pop').hidden = true; document.body.classList.remove('pop-on'); lsSet('cc-pop', ''); $('fab').focus(); }
+  function shown(t){ return t.content === BRIEF ? 'Daily brief' : (t.label || t.content); }
+  function renderPop(){
+    var th = $('pthread'); th.textContent = '';
+    if(!history.length){ var w = document.createElement('p'); w.className = 'pwelcome'; w.textContent = 'Ask me anything, or press “Do it with Claude” on a task, email or message to finish it here.'; th.appendChild(w); }
+    history.forEach(function(t){
+      var d = document.createElement('div');
+      if(t.role === 'user'){ d.className = 'pu'; d.textContent = shown(t); } else { d.className = 'pa body'; md(d, t.content); }
+      th.appendChild(d);
+    });
+    th.scrollTop = th.scrollHeight;
+  }
+  $('fab').addEventListener('click', function(){ openPop(); });
+  $('popClose').addEventListener('click', closePop);
+  $('popNew').addEventListener('click', function(){ if(busy) busy.abort(); history = []; saveHistory(); $('popCtx').textContent = 'Ask anything, or finish a task here'; renderPop(); $('pask').focus(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && popOpen() && !busy) closePop(); });
+  $('pform').addEventListener('submit', function(e){ e.preventDefault(); if(busy){ busy.abort(); return; } var t = $('pask').value; $('pask').value = ''; $('pask').style.height = 'auto'; ask(t); });
+  $('pask').addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('pform').requestSubmit(); } });
+  $('pask').addEventListener('input', function(){ var t = $('pask'); t.style.height = 'auto'; t.style.height = Math.min(150, t.scrollHeight) + 'px'; });
+  // start a task in the pop-up with its context
+  function doWithClaude(label, prompt){ prompt += ' When you write anything for me to send, use propose_draft so it gets checked.'; openPop(label); ask(prompt, false, label); }
+
+  function setBusyUi(on){
+    var ps = $('psend'), go = $('goBtn');
+    ps.textContent = on ? 'Stop' : 'Send'; ps.classList.toggle('stop', on);
+    go.textContent = on ? 'Stop' : 'Ask'; go.classList.toggle('stop', on);
+    $('fab').classList.toggle('busy', on);
+  }
+  function ask(text, auto, label){
+    text = String(text || '').trim(); if(!text) return;
+    if(busy) return;
+    var target, steps;
+    if(auto){
+      $('reply').hidden = false; $('lastQ').textContent = 'Daily brief';
+      target = $('answer'); steps = $('steps');
+    } else {
+      if(!popOpen()) openPop();
+      var th = $('pthread'); var wl = th.querySelector('.pwelcome'); if(wl) wl.remove();
+      var u = document.createElement('div'); u.className = 'pu'; u.textContent = label || text; th.appendChild(u);
+      var a = document.createElement('div'); a.className = 'pa'; a.innerHTML = '<div class="psteps"></div><div class="body"></div>'; th.appendChild(a);
+      target = a.querySelector('.body'); steps = a.querySelector('.psteps'); th.scrollTop = th.scrollHeight;
+    }
+    if(!sample || !mcp){ target.innerHTML = '<p class="err">' + (!sample ? 'Claude isn’t available in this view. Open the page in claude.ai while signed in.' : 'The connectors aren’t available in this view.') + '</p>'; return; }
+    currentRequest = text;
+    var turn = { role: 'user', content: text }; if(label) turn.label = label;
+    history.push(turn); saveHistory();
+    target.innerHTML = '<p class="thinking">Thinking…</p>'; steps.textContent = '';
+    busy = new AbortController(); var signal = busy.signal; setBusyUi(true);
+    var convo = [{ role: 'user', content: rules() }].concat(history.slice(-12).map(function(t){ return { role: t.role, content: t.content }; }));
+    var scroll = function(){ if(!auto){ var th = $('pthread'); th.scrollTop = th.scrollHeight; } };
+    sample(convo, { signal: signal, tools: tools(function(x){ steps.textContent = x; scroll(); }, signal), onText: function(u2){ md(target, u2.text); scroll(); } }).then(function(r){
+      history.push({ role: 'assistant', content: r.text }); saveHistory();
+      if(r.truncated){ var n = document.createElement('p'); n.className = 'err'; n.textContent = 'Cut short. Ask for less at a time.'; target.appendChild(n); }
+      if(auto) saveMeta({ lastBrief: dubaiDay() });
+    }, function(e){
+      if(e && e.text){ md(target, e.text); history.push({ role: 'assistant', content: e.text }); saveHistory(); } else if(!(e && e.code === 'cancelled')) target.textContent = '';
+      if(e && e.code === 'cancelled'){ if(!e.text) target.innerHTML = '<p class="thinking">Stopped.</p>'; return; }
+      var n = document.createElement('p'); n.className = 'err'; n.textContent = copyFor(e && e.code); target.appendChild(n);
+    }).then(function(){ busy = null; steps.textContent = ''; setBusyUi(false); scroll(); if(!$('log').hidden) renderLog(); });
+  }
+  // ---- send an email to Promotions (Gmail now, Outlook work inbox at the next desktop sync)
+  function dropItem(c, it, patch){
+    var items = (c.items || []).map(function(x){ return x === it ? (patch ? Object.assign({}, x, patch) : null) : x; }).filter(Boolean);
+    var nc = Object.assign({}, c, { items: items }); return saveCard(nc);
+  }
+  function toPromos(c, it, gmail, btn){
+    btn.disabled = true; btn.textContent = 'Moving…';
+    if(gmail){
+      if(!mcp || !it.threadId){ btn.textContent = 'Not available here'; return; }
+      mcp.callTool('Gmail', 'label_thread', { threadId: String(it.threadId), labelIds: ['CATEGORY_PROMOTIONS'] }).then(function(){
+        return mcp.callTool('Gmail', 'unlabel_thread', { threadId: String(it.threadId), labelIds: ['CATEGORY_PERSONAL'] }).catch(function(){});
+      }).then(function(){ markPill('gPill', true); dropItem(c, it); }, function(e){ btn.disabled = false; btn.textContent = 'To Promotions'; var n = document.createElement('small'); n.className = 'qn'; n.textContent = m365Copy(e).replace(/Microsoft 365/g, 'Gmail'); btn.parentNode.appendChild(n); });
+      return;
+    }
+    var job = { type: 'outlook-move-other', mailbox: 'yasser@akamedia.ae', title: it.title || '', subtitle: it.subtitle || '', when: it.when || '', status: 'pending', at: new Date().toISOString() };
+    var done = function(){ dropItem(c, it, { queued: 'pending' }); };
+    if(db && !memOnly){ db.collection('actions').add(job).then(done, function(){ btn.disabled = false; btn.textContent = 'To Promotions'; }); }
+    else { btn.textContent = 'Needs the saved workspace'; }
+  }
+
+  // ---- triple check for anything client-facing
+  var CHECKS = [
+    { key: 'facts', name: 'Facts match the source', focus: 'Every factual statement in the DRAFT (what was said, agreed, sent, attached, requested, scheduled) must be supported by the SOURCE. Flag anything not supported, contradicted, or overstated.' },
+    { key: 'details', name: 'Names, dates, numbers and promises', focus: 'Check every name (spelling, the right person addressed, first name used correctly), company and title; every date, weekday-vs-date match, time and time zone; every price, quantity and reference number; every attachment mentioned; every commitment or deadline Yasser would be making. Flag anything wrong, unsupported or risky to promise, and any unfilled [bracket].' },
+    { key: 'tone', name: 'Tone, language and recipient', focus: 'Check it goes to the right recipient (to/cc match the source), is in the same language as the original, is professional and warm for a client, contains no internal-only information (internal team talk, costs, margins, notes), no AI-sounding phrases, and nothing embarrassing or ambiguous.' }
+  ];
+  function runChecks(d, source){
+    var base = 'You are checking a message Yasser Obeid (CEO, a.k.a. Media, a production company) is about to send to a client or partner. Be strict and concrete. Today is ' + new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' (Dubai).\n\n'
+      + 'SOURCE (the original message and what Yasser said):\n---\n' + String(source || '(none given)').slice(0, 20000) + '\n---\n\n'
+      + 'DRAFT' + (d.channel ? ' (' + d.channel + ')' : '') + ':\n' + (d.to && d.to.length ? 'To: ' + d.to.join(', ') + '\n' : '') + (d.cc && d.cc.length ? 'Cc: ' + d.cc.join(', ') + '\n' : '') + (d.subject ? 'Subject: ' + d.subject + '\n' : '') + '---\n' + d.body + '\n---\n\n';
+    return CHECKS.map(function(ck){
+      var prompt = base + 'Your only job in this check: ' + ck.focus + '\nIgnore everything outside that job. Reply with only JSON: {"ok": true or false, "issues": ["short, specific issue quoting the words", ...]}. ok is true only if you found nothing to fix.';
+      return sample.json(prompt, { cache: false }).then(function(r){
+        var issues = Array.isArray(r && r.issues) ? r.issues.map(String).filter(Boolean).slice(0, 6) : [];
+        return { key: ck.key, name: ck.name, ok: !!(r && r.ok) && !issues.length, issues: issues };
+      }, function(e){ return { key: ck.key, name: ck.name, ok: false, failed: true, issues: ['This check could not run (' + ((e && e.code) || 'error') + '). Read this part yourself.'] }; });
+    });
+  }
+  function fetchSource(d){
+    var parts = [String(d.basis || '')];
+    if(d.mailbox === 'gmail' && d.threadId && mcp){
+      return mcp.callTool('Gmail', 'get_thread', { threadId: String(d.threadId), messageFormat: 'PLAIN_TEXT' }).then(function(r){
+        var ms = (r.payload && r.payload.messages) || [];
+        parts.push('ORIGINAL THREAD:\n' + ms.slice(-4).map(function(m){ return 'From: ' + m.sender + '\nTo: ' + (m.toRecipients || []).join(', ') + (m.ccRecipients && m.ccRecipients.length ? '\nCc: ' + m.ccRecipients.join(', ') : '') + '\nDate: ' + m.date + '\nSubject: ' + m.subject + '\n' + String(m.plaintextBody || m.snippet || '').slice(0, 5000); }).join('\n\n'));
+        return parts.join('\n\n');
+      }, function(){ return parts.join('\n\n'); });
+    }
+    if(d.mailbox === 'outlook' && d.uri && mcp){
+      return mcp.callTool(M365, 'read_resource', { uri: String(d.uri) }).then(function(r){
+        var o = resultObjects(r)[0] || {};
+        var body = o.body && o.body.contentType === 'html' ? textOf(o.body.content) : String((o.body && o.body.content) || o.bodyPreview || '');
+        parts.push('ORIGINAL EMAIL:\nFrom: ' + who(o.sender || o.from) + '\nTo: ' + (o.toRecipients || []).map(who).join(', ') + '\nDate: ' + o.receivedDateTime + '\nSubject: ' + o.subject + '\n' + body.slice(0, 8000));
+        return parts.join('\n\n');
+      }, function(){ return parts.join('\n\n'); });
+    }
+    return Promise.resolve(parts.join('\n\n'));
+  }
+  function checkList(host, d, source, onDone){
+    var box = document.createElement('div'); box.className = 'checks';
+    var head = document.createElement('div'); head.className = 'chh'; head.textContent = 'Triple check'; box.appendChild(head);
+    var rows = CHECKS.map(function(ck){
+      var r = document.createElement('div'); r.className = 'ck run'; r.innerHTML = '<span class="ci"></span><div><b></b><ul></ul></div>';
+      r.querySelector('b').textContent = ck.name; box.appendChild(r); return r;
+    });
+    var you = document.createElement('div'); you.className = 'ck you'; you.innerHTML = '<span class="ci"></span><div><b>Your read</b><ul><li>Read it once yourself before saving or sending.</li></ul></div>'; box.appendChild(you);
+    host.appendChild(box);
+    if(!sample || !sample.json){ rows.forEach(function(r){ r.className = 'ck warn'; r.querySelector('ul').innerHTML = '<li>Checks aren’t available in this view. Read it carefully yourself.</li>'; }); onDone([]); return; }
+    var results = runChecks(d, source);
+    var all = [];
+    results.forEach(function(pr, i){
+      pr.then(function(res){
+        all[i] = res; var r = rows[i]; r.className = 'ck ' + (res.ok ? 'ok' : 'warn');
+        var ul = r.querySelector('ul'); ul.textContent = '';
+        if(res.ok){ var li = document.createElement('li'); li.textContent = 'Nothing to fix.'; ul.appendChild(li); }
+        res.issues.forEach(function(t){ var li2 = document.createElement('li'); li2.textContent = t; ul.appendChild(li2); });
+      });
+    });
+    Promise.all(results).then(function(res){ onDone(res); });
+  }
+  function htmlBody(t){ return String(t || '').split(/\n{2,}/).map(function(p2){ return '<p>' + p2.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>'; }).join(''); }
+  function saveDraftNow(d){
+    if(d.mailbox === 'gmail'){
+      var a = { body: d.body }; if(d.to && d.to.length) a.to = d.to; if(d.cc && d.cc.length) a.cc = d.cc; if(d.subject) a.subject = d.subject; if(d.replyToMessageId) a.replyToMessageId = d.replyToMessageId;
+      return mcp.callTool('Gmail', 'create_draft', a).then(function(r){ var p3 = r.payload || {}; return p3.viewUrl || 'https://mail.google.com/mail/#drafts'; });
+    }
+    if(d.mailbox === 'outlook'){
+      if(d.kind === 'reply' && d.messageId) return mcp.callTool(M365, 'outlook_create_reply_draft', { messageId: d.messageId, body: htmlBody(d.body), bodyType: 'html' }).then(function(r){ var o = resultObjects(r)[0] || {}; return o.webLink || 'https://outlook.office.com/mail/drafts'; });
+      var b = { body: htmlBody(d.body), bodyType: 'html' }; if(d.to && d.to.length) b.to = d.to; if(d.cc && d.cc.length) b.cc = d.cc; if(d.subject) b.subject = d.subject;
+      return mcp.callTool(M365, 'outlook_create_draft', b).then(function(r){ var o = resultObjects(r)[0] || {}; return o.webLink || 'https://outlook.office.com/mail/drafts'; });
+    }
+    return Promise.reject({ message: 'no mailbox' });
+  }
+  function proposeDraft(input){
+    var d = { mailbox: ['gmail', 'outlook'].indexOf(input.mailbox) >= 0 ? input.mailbox : 'none', kind: input.kind === 'new' ? 'new' : 'reply', to: Array.isArray(input.to) ? input.to.map(String) : [], cc: Array.isArray(input.cc) ? input.cc.map(String) : [], subject: input.subject ? String(input.subject) : '', body: String(input.body || '').trim(), threadId: input.threadId ? String(input.threadId) : '', replyToMessageId: input.replyToMessageId ? String(input.replyToMessageId) : '', messageId: input.messageId ? String(input.messageId) : '', uri: input.uri ? String(input.uri) : '', basis: String(input.basis || ''), channel: input.channel ? String(input.channel) : (input.mailbox === 'none' ? '' : 'Email') };
+    if(!popOpen()) openPop();
+    var th = $('pthread'), card = document.createElement('div'); card.className = 'rev';
+    var where = d.mailbox === 'gmail' ? 'Gmail draft' : d.mailbox === 'outlook' ? 'Outlook draft' : (d.channel || 'Message') + ' to copy';
+    card.innerHTML = '<div class="revh"><b></b><span></span></div><div class="meta2"></div><textarea class="revtext" rows="8" aria-label="Draft text"></textarea><div class="revacts"></div>';
+    card.querySelector('.revh b').textContent = 'Draft for your review'; card.querySelector('.revh span').textContent = where;
+    var meta = []; if(d.to.length) meta.push('To: ' + d.to.join(', ')); if(d.cc.length) meta.push('Cc: ' + d.cc.join(', ')); if(d.subject) meta.push('Subject: ' + d.subject);
+    card.querySelector('.meta2').textContent = meta.join('  ·  '); if(!meta.length) card.querySelector('.meta2').remove();
+    var ta = card.querySelector('.revtext'); ta.value = d.body;
+    th.appendChild(card);
+    var acts = card.querySelector('.revacts');
+    var save = document.createElement('button'); save.type = 'button'; save.className = 'psend'; save.disabled = true;
+    save.textContent = d.mailbox === 'none' ? 'Copy' : 'Save as draft'; save.title = 'Available once the three checks finish';
+    var fix = document.createElement('button'); fix.type = 'button'; fix.className = 'pbtn'; fix.textContent = 'Fix the issues'; fix.hidden = true;
+    var status = document.createElement('small'); status.className = 'revst'; status.textContent = 'Running three checks…';
+    acts.append(save, fix, status);
+    var lastRes = [];
+    var start = function(){
+      d.body = ta.value.trim();
+      var old = card.querySelector('.checks'); if(old) old.remove();
+      save.disabled = true; fix.hidden = true; status.textContent = 'Running three checks…';
+      fetchSource(d).then(function(src){
+        checkList(card, d, src, function(res){
+          lastRes = res;
+          var bad = res.filter(function(x){ return !x.ok; });
+          save.disabled = false;
+          if(bad.length){ fix.hidden = false; status.textContent = bad.length + ' of 3 checks found something. Fix it, or save anyway after reading.'; save.textContent = d.mailbox === 'none' ? 'Copy anyway' : 'Save anyway'; }
+          else { status.textContent = 'All three checks passed. Read it once, then save.'; save.textContent = d.mailbox === 'none' ? 'Copy' : 'Save as draft'; }
+          card.appendChild(acts);
+          $('pthread').scrollTop = $('pthread').scrollHeight;
+        });
+      });
+    };
+    var recheck = document.createElement('button'); recheck.type = 'button'; recheck.className = 'pbtn'; recheck.textContent = 'Check again'; recheck.hidden = true;
+    acts.insertBefore(recheck, status);
+    ta.addEventListener('input', function(){ recheck.hidden = false; save.disabled = true; status.textContent = 'You edited it. Check again before saving.'; });
+    recheck.addEventListener('click', function(){ recheck.hidden = true; start(); });
+    fix.addEventListener('click', function(){
+      var issues = lastRes.filter(function(x){ return !x.ok; }).map(function(x){ return x.name + ': ' + x.issues.join('; '); }).join('\n');
+      ask('The checks found issues in the draft. Fix only these, keep everything else, and propose the corrected draft again with propose_draft (same mailbox and details):\n' + issues + '\n\nCurrent draft:\n' + ta.value, false, 'Fix the issues the checks found');
+    });
+    save.addEventListener('click', function(){
+      d.body = ta.value.trim();
+      if(d.mailbox === 'none'){
+        var t = d.body;
+        try { navigator.clipboard.writeText(t).then(function(){ status.textContent = 'Copied. Paste it where you need it.'; }, function(){ ta.select(); status.textContent = 'Selected: press Cmd+C to copy.'; }); } catch(e){ ta.select(); status.textContent = 'Selected: press Cmd+C to copy.'; }
+        return;
+      }
+      save.disabled = true; status.textContent = 'Saving the draft…';
+      saveDraftNow(d).then(function(link){
+        status.textContent = ''; var a = document.createElement('a'); a.href = link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Saved as a draft. Open it ↗'; status.appendChild(a);
+        save.textContent = 'Saved'; ta.readOnly = true; fix.hidden = true; recheck.hidden = true;
+      }, function(e){ save.disabled = false; status.textContent = (e && e.code) ? m365Copy(e).replace(/Microsoft 365/g, d.mailbox === 'gmail' ? 'Gmail' : 'Microsoft 365') : 'Couldn’t save the draft. Try again.'; });
+    });
+    start();
+  }
+
+  // ---- human reply writer (email, LinkedIn, WhatsApp)
+  var rwChannel = 'Email', rwLast = '', rwBusy = null;
+  Array.prototype.forEach.call(document.querySelectorAll('#rwCh button'), function(b){ b.addEventListener('click', function(){ rwChannel = b.dataset.ch; Array.prototype.forEach.call(document.querySelectorAll('#rwCh button'), function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }); });
+  var VOICE = 'You write replies as Yasser Obeid, founder and CEO of a.k.a. Media, a production company in Dubai (also Abu Dhabi, Riyadh, Cape Town). He is warm, direct and busy.\n'
+    + 'Write like a real person typing quickly, not like an assistant:\n'
+    + '- Short. Get to the point in the first line. No throat-clearing ("I hope this email finds you well", "Thank you for reaching out", "I wanted to").\n'
+    + '- Plain words, contractions, varied sentence length. No corporate filler (leverage, synergy, delighted, seamless, circle back, touch base, valuable insights).\n'
+    + '- No em dashes, no semicolons, no bullet lists unless the message truly needs one, no headings, no bold, no emojis unless the other person used them.\n'
+    + '- Do not repeat their message back to them. Do not over-thank. One question at most.\n'
+    + '- Never invent facts, prices, dates or commitments. If something is needed that you do not know, leave a short [bracket] for Yasser to fill.\n'
+    + '- Reply in the same language as the message (Arabic stays Arabic, Russian stays Russian).\n';
+  function rwPrompt(extra){
+    var ch = rwChannel, msg = $('rwIn').value.trim().slice(0, 12000), want = $('rwWant').value.trim();
+    var fmt = ch === 'Email' ? 'This is an email reply: greeting with their first name ("Hi Sam,"), 2 to 5 short lines, then sign off "Best,\nYasser" (or just "Yasser" if the thread is casual). No subject line.'
+      : ch === 'LinkedIn' ? 'This is a LinkedIn message: 1 to 4 short sentences, friendly and professional, first name greeting, no sign-off block, no hashtags.'
+      : 'This is a ' + ch + ' message: 1 to 3 short lines, natural and direct, no greeting formula, no sign-off.';
+    return VOICE + fmt + '\n\nThe message he received:\n---\n' + msg + '\n---\n' + (want ? '\nWhat Yasser wants to say: ' + want + '\n' : '\nIf the right answer is unclear, write a short, natural holding reply.\n')
+      + (extra && rwLast ? '\nYour previous draft:\n---\n' + rwLast + '\n---\n' + extra + '\n' : '')
+      + '\nReturn only the reply text, nothing before or after it.';
+  }
+  function rwRun(extra){
+    if(!sample){ $('rwNote').textContent = 'Claude isn’t available in this view.'; return; }
+    if(!$('rwIn').value.trim()){ $('rwNote').textContent = 'Paste the message first.'; $('rwIn').focus(); return; }
+    if(rwBusy) rwBusy.abort();
+    rwBusy = new AbortController();
+    $('rwNote').textContent = 'Writing…'; $('rwOut').hidden = false; $('rwText').textContent = ''; $('rwChecks').textContent = '';
+    sample(rwPrompt(extra), { signal: rwBusy.signal, cache: false, onText: function(u){ $('rwText').textContent = u.text.trim(); } }).then(function(r){
+      rwLast = r.text.trim().replace(/^"+|"+$/g, ''); $('rwText').textContent = rwLast; $('rwNote').textContent = '';
+      var host = $('rwChecks'); host.textContent = ''; $('rwCopy').textContent = 'Checking\u2026'; $('rwCopy').disabled = true;
+      checkList(host, { body: rwLast, channel: rwChannel, to: [], cc: [] }, 'Message received:\n' + $('rwIn').value + ($('rwWant').value.trim() ? '\n\nWhat Yasser wants to say: ' + $('rwWant').value.trim() : ''), function(res){
+        var bad = res.filter(function(x){ return !x.ok; }).length;
+        $('rwCopy').disabled = false; $('rwCopy').textContent = bad ? 'Copy anyway' : 'Copy';
+        $('rwNote').textContent = bad ? bad + ' of 3 checks found something. Use a rewrite or edit before sending.' : 'All three checks passed. Read it once before sending.';
+      });
+    }, function(e){
+      if(e && e.code === 'cancelled') return;
+      if(e && e.text){ rwLast = e.text.trim(); $('rwText').textContent = rwLast; }
+      $('rwNote').textContent = copyFor(e && e.code);
+    }).then(function(){ rwBusy = null; });
+  }
+  $('rwGo').addEventListener('click', function(){ rwRun(''); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tweak]'), function(b){ b.addEventListener('click', function(){ rwRun(b.dataset.tweak); }); });
+  $('rwCopy').addEventListener('click', function(){
+    var t = $('rwText').textContent, b = $('rwCopy');
+    function done(){ b.textContent = 'Copied'; setTimeout(function(){ b.textContent = 'Copy'; }, 1500); }
+    try { navigator.clipboard.writeText(t).then(done, function(){ selectReply(); }); } catch(e){ selectReply(); }
+  });
+  function selectReply(){ var r = document.createRange(); r.selectNodeContents($('rwText')); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); $('rwNote').textContent = 'Selected: press Cmd+C to copy.'; }
+  function openWriter(context, channel){
+    openSec('claude'); $('rw').open = true;
+    if(channel){ var b = document.querySelector('#rwCh button[data-ch="' + channel + '"]'); if(b) b.click(); }
+    $('rwIn').value = context; $('rwOut').hidden = true; $('rwNote').textContent = 'Paste the full email text here for the best reply, then press Write reply.';
+    setTimeout(function(){ $('rw').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('rwIn').focus(); }, 60);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-writer]'), function(b){ b.addEventListener('click', function(){ openWriter('', b.dataset.writer); $('rwNote').textContent = 'Paste the message you got, then press Write reply.'; }); });
+  var BRIEF = 'Brief me. Look at both mailboxes, Gmail (primary inbox) and Outlook: emails from the last 3 days that need my reply or attention (unread, important, from clients or my team), my calendar for today and tomorrow, and Teams messages from the last 2 days. Pin one card per topic with only what matters, most urgent first, and remove cards from earlier briefs that are now stale. Then tell me in two sentences what needs me first.';
+
+  $('cmd').addEventListener('submit', function(e){ e.preventDefault(); if(busy){ busy.abort(); return; } var t = $('ask').value; $('ask').value = ''; $('ask').style.height = 'auto'; ask(t); });
+  $('ask').addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('cmd').requestSubmit(); } });
+  $('ask').addEventListener('input', function(){ var t = $('ask'); t.style.height = 'auto'; t.style.height = Math.min(180, t.scrollHeight) + 'px'; });
+  $('briefBtn').addEventListener('click', function(){ ask(BRIEF, true); });
+  Array.prototype.forEach.call(document.querySelectorAll('.sugg .chip'), function(c){ c.addEventListener('click', function(){ ask(c.textContent === 'Brief me' ? BRIEF : c.textContent, c.textContent === 'Brief me'); }); });
+  var armed = false;
+  $('clearAll').addEventListener('click', function(){
+    var b = $('clearAll');
+    if(!armed){ armed = true; b.textContent = 'Click again to clear every card'; setTimeout(function(){ armed = false; b.textContent = 'Clear workspace'; }, 3000); return; }
+    armed = false; b.textContent = 'Clear workspace';
+    Object.keys(cards).forEach(function(k){ removeCard(k); });
+    history = []; saveHistory(); $('reply').hidden = true;
+  });
+
+  // ---------- meta (daily brief) ----------
+  var meta = {};
+  function saveMeta(patch){ for(var k in patch) meta[k] = patch[k]; if(db && !memOnly) db.doc('meta/state').set(meta).catch(function(){}); else lsSet('cc-meta', JSON.stringify(meta)); }
+
+  // ---------- boot ----------
+  loadLocal(); renderCanvas();
+  var cl = window.claude, ready = { db: false, mcp: false, sample: false };
+  function maybeAutoBrief(){
+    if(!(ready.db && ready.mcp && ready.sample)) return;
+    if(!sample || !mcp) return;
+    if(meta.lastBrief === dubaiDay()) return;
+    if(document.hidden) return;
+    ask(BRIEF, true);
+  }
+  if(cl && typeof cl.use === 'function'){
+    cl.use('db').then(function(d){
+      db = d;
+      if(!d){ memOnly = true; try { meta = JSON.parse(lsGet('cc-meta') || '{}') || {}; } catch(e){} ready.db = true; maybeAutoBrief(); return; }
+      var first = true;
+      d.collection('cards').onSnapshot(function(snap){
+        var next = {}; snap.docs.forEach(function(doc){ var v = doc.data(); if(v) next[doc.id] = JSON.parse(JSON.stringify(v)); });
+        cards = next; renderCanvas();
+        if(first){ first = false; d.doc('meta/state').get().then(function(s){ meta = (s.exists && JSON.parse(JSON.stringify(s.data()))) || {}; }).catch(function(){}).then(function(){ ready.db = true; maybeAutoBrief(); }); }
+      }, function(){ memOnly = true; loadLocal(); renderCanvas(); ready.db = true; maybeAutoBrief(); });
+    }, function(){ memOnly = true; ready.db = true; maybeAutoBrief(); });
+    cl.use('mcp').then(function(m){ mcp = m; if(!m) markM365(false, { code: 'not_granted', message: 'Microsoft 365 is not available in this view.' }); ready.mcp = true; maybeAutoBrief(); }, function(){ ready.mcp = true; });
+    cl.use('sample').then(function(s){ sample = s; ready.sample = true; maybeAutoBrief(); }, function(){ ready.sample = true; });
+  }
+})();
+
+  // ---- Music (Apple Music embed) ----
+  (function(){
+    var $ = function(id){ return document.getElementById(id); };
+    var EMBED = 'https://embed.music.apple.com/ae/playlist/avicii-essentials/pl.d29a376c60b6430d9efff225cce78fa2';
+    var box = $('mus'), btn = $('musBtn'), slot = $('musSlot');
+    function load(){
+      if (slot.firstChild) return;
+      var f = document.createElement('iframe');
+      f.title = 'Avicii Essentials, Apple Music';
+      f.src = EMBED;
+      f.setAttribute('allow', 'autoplay *; encrypted-media *; fullscreen *; clipboard-write');
+      f.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation');
+      slot.appendChild(f);
+    }
+    function show(on){
+      if (on) load();
+      box.classList.toggle('hide', !on);
+      btn.classList.toggle('on', !!slot.firstChild);
+      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function(){ show(box.classList.contains('hide')); });
+    $('musHide').addEventListener('click', function(){ show(false); });
+    $('musStop').addEventListener('click', function(){ slot.innerHTML = ''; show(false); });
+  })();
+</script>
