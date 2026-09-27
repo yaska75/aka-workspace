@@ -33,6 +33,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 "Instru
 .pill b{color:var(--ink);font-weight:600}
 .sound[aria-pressed=true]{color:var(--accent)}
 .sound .off{display:none}.sound[aria-pressed=false] .on{display:none}.sound[aria-pressed=false] .off{display:inline}
+.notif[aria-pressed=true]{color:var(--accent)}
 .cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:24px;align-items:start}
 .col{--c:var(--p0);--c-ink:var(--accent-ink);background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:18px;padding:22px 20px 18px;min-width:0}
 .k0{--c:var(--p0)}.k1{--c:var(--p1)}.k2{--c:var(--p2)}.k3{--c:var(--p3)}.k4{--c:var(--p4)}.k5{--c:var(--p5)}.k6{--c:var(--p6)}
@@ -472,6 +473,9 @@ button{font:inherit;cursor:pointer}
           '<button class="pill sound" id="soundBtn" type="button" aria-pressed="true" aria-label="Sound effects">' +
             '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path class="on" d="M10.5 5.5a3.5 3.5 0 010 5M12.5 3.5a6.3 6.3 0 010 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path class="off" d="M10.5 6l4 4m0-4l-4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>' +
             '<span class="on">Sound on</span><span class="off">Sound off</span></button>' +
+          '<button class="pill notif" id="notifBtn" type="button" hidden aria-pressed="false" aria-label="Notify me on this device">' +
+            '<svg width="16" height="16" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.2a4.3 4.3 0 00-4.3 4.3v2.1c0 .6-.2 1.1-.6 1.6L1.2 10h11.6l-.9-.8c-.4-.5-.6-1-.6-1.6V5.5A4.3 4.3 0 007 1.2zm0 11.6a1.5 1.5 0 001.5-1.3h-3A1.5 1.5 0 007 12.8z" fill="currentColor"/></svg>' +
+            '<span>Notify me on this device</span></button>' +
         '</div></div>' +
       '<div class="banner" id="roBanner" role="alert" hidden><b>This list is view only for you</b>Your ticks and changes can’t be saved from this browser. Ask Yasser to share the list with you with edit access, then open it again while signed in.</div>' +
       '<div class="cols" id="cols"></div>' +
@@ -642,9 +646,11 @@ button{font:inherit;cursor:pointer}
     $('teamBtn').hidden = !canManageTeam();
     $('sendBtn').hidden = mode === 'readonly' || !m || !addablePeople().length;
     $('chatBtn').hidden = !m;
+    $('notifBtn').hidden = !m;
     var unread = m ? channelsFor(m).reduce(function(n, c){ return n + unreadIn(c.id); }, 0) : 0;
     $('chatBadge').hidden = !unread; $('chatBadge').textContent = unread > 99 ? '99+' : unread;
     if(!titleTimer) document.title = (unread ? '(' + unread + ') ' : '') + 'a.k.a. Media team board';
+    if(typeof paintNotif === 'function') paintNotif();
   }
 
   // ---------- local time & day/night per location ----------
@@ -1188,9 +1194,28 @@ button{font:inherit;cursor:pointer}
     var shown = fresh.filter(function(f){ return !(viewing && f.ch === chatChan); });
     shown.slice(-3).forEach(function(f){
       var from = person(f.m.by), peer = dmPeer(f.ch, v);
-      toast({ person: from, title: (from ? from.name : 'Someone') + (peer ? '' : ' in ' + chanName(f.ch, v)), text: msgPreview(f.m), ch: f.ch });
+      var title = (from ? from.name : 'Someone') + (peer ? '' : ' in ' + chanName(f.ch, v));
+      toast({ person: from, title: title, text: msgPreview(f.m), ch: f.ch });
+      pushNotify(title, msgPreview(f.m), { tag: 'chat-' + f.ch, onclick: function(){ chatChan = f.ch; ss.set('chat-chan', f.ch); openChat(); } });
     });
     if(!calls.length) playChime();
+  }
+  // pop-up + browser notification for tasks someone else added to my list since this browser last checked
+  function taskHeardKey(){ return 'task-heard-' + (myId() || ''); }
+  function announceNewTasks(){
+    var v = me(); if(!v) return;
+    var heard = +(ls.get(taskHeardKey()) || 0), fresh = [], newest = heard;
+    (v.tasks || []).forEach(function(t){
+      if(t.createdAt > newest) newest = t.createdAt;
+      if(heard && t.createdAt > heard && t.addedBy && t.addedBy !== v.id) fresh.push(t);
+    });
+    ls.set(taskHeardKey(), String(Math.max(newest, heard || Date.now())));
+    fresh.sort(function(a, b){ return a.createdAt - b.createdAt; });
+    fresh.slice(-3).forEach(function(t){
+      var from = person(t.addedBy);
+      toast({ person: from, title: (from ? from.name : 'Someone') + ' gave you a task', text: t.text });
+      pushNotify((from ? from.name : 'Someone') + ' gave you a task', t.text, { tag: 'task-' + t.id });
+    });
   }
   // superuser only: pop-up when someone reads one of your messages
   function announceReads(){
@@ -1798,6 +1823,10 @@ button{font:inherit;cursor:pointer}
     whoOpen = false; $('whoOverlay').hidden = true; $('whoOverlay').classList.remove('lock'); document.body.classList.remove('signed-out');
     colSig = ''; render(); if(pendingSave) scheduleSave();
     if(chatOpen && $('chatPanel').hidden) openChat();
+    // first time this device has ever been signed in as this person, the boot-time announce* calls ran before
+    // me() was available and skipped setting their baselines — set them now so future loads notify correctly.
+    if(ls.get(heardKey()) === null) announceNew();
+    if(ls.get(taskHeardKey()) === null) announceNewTasks();
   }
   function guardAuth(){ if(!me() && !whoOpen) openWho(); }
   $('meBtn').addEventListener('click', openWho);
@@ -1950,6 +1979,48 @@ button{font:inherit;cursor:pointer}
     soundOn = !soundOn; ls.set('pieter-todo-sound', soundOn ? 'on' : 'off'); paintSound();
     if(soundOn) ding();
   });
+
+  // ---------- browser notifications (quiet 21:00-09:00 Dubai time; urgent alerts always ring separately) ----------
+  var NOTIF_START = 9, NOTIF_END = 21;
+  function dubaiHour(d){
+    var p = {}; new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', hourCycle: 'h23' }).formatToParts(d || new Date()).forEach(function(x){ p[x.type] = x.value; });
+    return +p.hour;
+  }
+  function inQuietHours(){ var h = dubaiHour(); return !(h >= NOTIF_START && h < NOTIF_END); }
+  function notifKey(){ return 'notify-on-' + (myId() || ''); }
+  function notifWanted(){ return ls.get(notifKey()) === '1'; }
+  function notifAvailable(){ return typeof Notification !== 'undefined'; }
+  function notifGranted(){ return notifAvailable() && Notification.permission === 'granted'; }
+  var notifBtn = $('notifBtn');
+  function paintNotif(){
+    var on = notifWanted() && notifGranted();
+    notifBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    notifBtn.title = !notifAvailable() ? 'Notifications aren’t supported in this browser' :
+      on ? 'Notifications on for this device (9am–21:00 Dubai time, urgent pings always come through)' : 'Click to turn on notifications for this device';
+  }
+  paintNotif();
+  notifBtn.addEventListener('click', function(){
+    if(!notifAvailable()) return;
+    if(notifWanted() && notifGranted()){ ls.set(notifKey(), '0'); paintNotif(); return; }
+    Notification.requestPermission().then(function(perm){
+      if(perm === 'granted'){
+        ls.set(notifKey(), '1');
+        try { new Notification('a.k.a. Media team board', { body: 'You’ll be notified 9am–21:00 Dubai time on this device. Urgent pings always come through.' }); } catch(e){}
+      }
+      paintNotif();
+    });
+  });
+  function pushNotify(title, body, opts){
+    opts = opts || {};
+    if(!notifWanted() || !notifGranted()) return;
+    if(!opts.urgent && inQuietHours()) return;
+    if(!document.hidden) return;
+    try {
+      var n = new Notification(title, { body: body || '', tag: opts.tag });
+      n.onclick = function(){ window.focus(); if(opts.onclick) opts.onclick(); n.close(); };
+    } catch(e){}
+  }
+
   var actx = null;
   function ctx(){
     if(!soundOn) return null;
@@ -2250,7 +2321,7 @@ button{font:inherit;cursor:pointer}
   render();
   if(!me()) openWho();
   else if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
-  setTimeout(function(){ announceNew(); announceReads(); checkStoredAlerts(); }, 400);
+  setTimeout(function(){ announceNew(); announceNewTasks(); announceReads(); checkStoredAlerts(); }, 400);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && chatOpen) recordRead(chatChan); });
 
   (function connect(){

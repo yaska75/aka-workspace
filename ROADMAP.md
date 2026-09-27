@@ -1,6 +1,15 @@
 # Roadmap
 
 ## Shipped
+- **Team board: browser notifications, on this device** (27 Sep 2026). Each person can click "Notify me on this
+  device" (top bar, once signed in) to turn on browser notifications for new tasks and chat messages, on that
+  browser/device only. They arrive 9am–21:00 Dubai time; outside that window they're held back silently unless
+  someone uses the existing urgent alert/alarm, which always comes through. Notifications only fire while the tab
+  is in the background (so you don't get a duplicate of the in-page pop-up while watching the screen). Honest
+  limits: this is a real WhatsApp-style ping, not an actual WhatsApp message — it needs the person to have said
+  yes once on that specific device/browser, and like any browser notification it may not reliably wake a phone
+  once the browser is fully closed or the phone is locked for a long time. A real WhatsApp message (arriving in
+  the WhatsApp app itself) needs a WhatsApp Business API sender — see "Ideas mentioned, not started" below.
 - **Command Centre: pin, hide, remind, and Dubai/local clocks** (27 Sep 2026). Every item can be pinned (star, moves to the
   top), hidden (collapses to a thin line at the bottom, undo with the same button), or given a reminder (pick a quick
   option or a custom time; it rings with sound and flashes on screen until you Stop or Snooze). Reminders and pins/hides
@@ -30,6 +39,10 @@
   sharing the link only with the team. The page is shared as "Anyone with the link" so it can be sent to the team.
 
 ## Ideas mentioned, not started
+- Real WhatsApp messages for task/chat notifications (not just browser alerts), via a WhatsApp Business API sender
+  through Twilio: register a WhatsApp sender in the Twilio Console, test it in Twilio's sandbox, get message
+  templates approved (any business-initiated message outside a 24-hour reply window needs an approved template),
+  then hand the resulting Account SID / Auth Token / WhatsApp number back to Claude to wire in.
 - Instagram DMs in the Command Centre (needs an Instagram Business/Creator account connected via Composio).
 - Forward yasser@akamedia.ae (Namecheap Private Email) into Gmail so work mail can be read and drafted without the Mac.
 - Spotify player (needs Spotify Premium and a Composio developer key). Apple Music embed is live now.
