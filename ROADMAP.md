@@ -1,6 +1,10 @@
 # Roadmap
 
 ## Shipped
+- **Team board: task cards color-coded by how long they've sat uncleared** (27 Sep 2026). An open task's card now
+  gets a colored left edge: light blue under 24 hours old, orange 24–48 hours, red past 48 hours. It's based on when
+  the task was created, not its due date (that's the separate "Overdue" label). Done tasks never get a color. This
+  is a quiet visual cue on top of the existing overdue marker, not a replacement for it.
 - **Command Centre: "Make a Quote" widget** (27 Sep 2026). A new "Make" section: paste a brief (client, scope, crew,
   equipment, add-ons) into "Make a quote" and it builds a Google Sheets budget from your standard quote template
   (under akamediadigital@gmail.com) and posts the link back as a card, usually within the hour. The in-page Claude

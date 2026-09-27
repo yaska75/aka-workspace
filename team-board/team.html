@@ -118,6 +118,9 @@ button{font:inherit;cursor:pointer}
 .noteedit textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--c,var(--accent));border-radius:9px;padding:7px 9px;resize:vertical;min-height:44px}
 .noteedit .row{display:flex;gap:10px}
 .overdue .due{color:var(--strike);font-weight:600}
+.age-fresh{border-left:3px solid #3b82f6;background:rgba(59,130,246,.07)}
+.age-warn{border-left:3px solid #f59e0b;background:rgba(245,158,11,.10)}
+.age-stale{border-left:3px solid #dc2626;background:rgba(220,38,38,.10)}
 .from{color:var(--muted);font-weight:400}
 .actions{display:flex;flex-wrap:wrap;gap:2px;margin:4px 0 0 -7px;opacity:.55;transition:opacity .15s}
 .mvbox{display:flex;flex-direction:column;gap:2px;opacity:.55;transition:opacity .15s}
@@ -878,7 +881,12 @@ button{font:inherit;cursor:pointer}
     var u = ui[pid];
     var li = document.createElement('li');
     var when = t.due || today;
-    li.className = 'item' + (t.done ? ' done' : '') + (!t.done && when < today ? ' overdue' : '');
+    var ageCls = '';
+    if(!t.done){
+      var ageH = (Date.now() - (t.createdAt || Date.now())) / 3600000;
+      ageCls = ageH >= 48 ? ' age-stale' : ageH >= 24 ? ' age-warn' : ' age-fresh';
+    }
+    li.className = 'item' + (t.done ? ' done' : '') + (!t.done && when < today ? ' overdue' : '') + ageCls;
     li.dataset.key = t.id;
 
     var check = document.createElement('button');
