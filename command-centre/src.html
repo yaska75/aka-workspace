@@ -89,7 +89,7 @@ a{color:inherit}
 .card .tools button:hover{background:var(--soft);color:var(--ink)}
 .card .sum{padding:0 16px 10px;font-size:14px;color:var(--muted)}
 .card ul.items{list-style:none;margin:0;padding:0 8px 10px}
-.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px;border-radius:12px}
+.item{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:start;padding:8px;border-radius:12px}
 .item:hover{background:var(--soft)}
 .item .flag{width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--line)}
 .item .flag.high{background:var(--red)}
@@ -99,6 +99,32 @@ a{color:inherit}
 .item small{display:block;color:var(--muted);font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .item .when{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .item .acts{grid-column:2/-1;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.pinhide{display:flex;gap:1px;flex:none}
+.pinhide button{border:0;background:none;color:var(--muted);width:22px;height:22px;border-radius:6px;font-size:13px;cursor:pointer;line-height:1;flex:none}
+.pinhide button:hover{background:var(--soft);color:var(--ink)}
+.pinhide button.on{color:var(--red)}
+.item.pinned{background:color-mix(in srgb,var(--red) 7%,transparent)}
+.item.pinned:hover{background:color-mix(in srgb,var(--red) 12%,transparent)}
+.item.hidden{grid-template-columns:1fr auto;padding:3px 8px;opacity:.55}
+.item.hidden .flag,.item.hidden small,.item.hidden .when,.item.hidden .acts{display:none}
+.item.hidden b{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini.rembtn.set{border-color:var(--red);color:var(--red)}
+.rempick,.alarm{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px}
+.rempick-card,.alarm-card{background:var(--panel);border-radius:18px;padding:22px;width:min(340px,100%);box-shadow:0 30px 80px rgba(0,0,0,.3);text-align:center}
+.rempick-card b,.alarm-card b{display:block;font:700 17px/1.3 "Outfit",sans-serif;margin-bottom:12px;overflow-wrap:anywhere}
+.rempick-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.rempick-chips button{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink)}
+.rempick-chips button:hover{border-color:var(--red);color:var(--red)}
+.rempick-custom{display:block;font-size:12.5px;color:var(--muted);margin-bottom:8px;text-align:left}
+.rempick-custom input{display:block;width:100%;margin-top:4px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px;background:var(--panel);color:var(--ink)}
+.rempick-note{font-size:11.5px;color:var(--muted);margin:0 0 14px}
+.rempick-acts,.alarm-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.alarm-ico{font-size:34px;margin-bottom:4px;animation:alarmspin 1s ease-in-out infinite;display:inline-block}
+@keyframes alarmspin{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
+.alarm{animation:alarmflash 1s step-end infinite}
+@keyframes alarmflash{0%,100%{background:rgba(0,0,0,.45)}50%{background:rgba(220,38,38,.6)}}
+.item.ringing{animation:itemflash .6s step-end infinite;border-radius:12px}
+@keyframes itemflash{0%,100%{background:color-mix(in srgb,var(--red) 25%,transparent)}50%{background:transparent}}
 .mini{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:3px 9px;font-size:12.5px;text-decoration:none;color:var(--ink)}
 .mini:hover{border-color:var(--red);color:var(--red)}
 .card .text{padding:0 16px 14px;font-size:14.5px}
@@ -218,6 +244,11 @@ body.pop-on .fab{display:none}
 .chip:hover{border-color:var(--red);color:var(--red)}
 .foot{font-size:12px;color:var(--muted);text-align:center}
 .foot button{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:12px;padding:0}
+.bigclocks{display:flex;gap:16px;justify-content:center;padding:18px 16px 32px;flex-wrap:wrap}
+.bc{flex:1 1 200px;max-width:280px;text-align:center;padding:16px 10px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.bc-t{display:block;font:700 36px/1.1 "Outfit",sans-serif;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.bc-l{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+@media (max-width:480px){.bc-t{font-size:27px}.bigclocks{gap:10px}}
 
 @media (max-width:640px){
   .cmd{grid-template-columns:1fr auto}
@@ -332,6 +363,10 @@ body.pop-on .fab{display:none}
     <div class="canvas" id="cv-claude"></div>
   </section>
   <p class="foot">Claude reads your Gmail, Outlook, calendar and Teams and can save drafts. It never sends anything. <button type="button" id="clearAll">Clear workspace</button></p>
+  <div class="bigclocks" id="bigclocks" aria-label="Your time and Dubai time">
+    <div class="bc"><span class="bc-t" id="bcLocal">--:--</span><span class="bc-l" id="bcLocalLabel">Your time</span></div>
+    <div class="bc"><span class="bc-t" id="bcDubai">--:--</span><span class="bc-l">Dubai</span></div>
+  </div>
 </div>
 
 <section class="mus hide" id="mus" aria-label="Music player">
@@ -347,6 +382,28 @@ body.pop-on .fab{display:none}
   <form class="pform" id="pform"><textarea id="pask" rows="1" placeholder="Message Claude" aria-label="Message Claude"></textarea><button type="submit" class="psend" id="psend">Send</button></form>
   <p class="pfoot">Reads Gmail, Outlook, calendar and Teams. Saves drafts, never sends.</p>
 </div>
+
+<div class="rempick" id="rempick" hidden role="dialog" aria-modal="true" aria-labelledby="rempickTitle">
+  <div class="rempick-card">
+    <b id="rempickTitle">Remind me</b>
+    <div class="rempick-chips">
+      <button type="button" data-m="15">In 15 min</button>
+      <button type="button" data-m="60">In 1 hour</button>
+      <button type="button" data-m="180">In 3 hours</button>
+      <button type="button" data-tom="9">Tomorrow 9am</button>
+    </div>
+    <label class="rempick-custom">Or pick a time<input type="datetime-local" id="rempickCustom"></label>
+    <p class="rempick-note">Only rings while this page is open in your browser.</p>
+    <div class="rempick-acts"><button type="button" class="mini" id="rempickCancel">Close</button><button type="button" class="mini" id="rempickClear" hidden>Remove reminder</button><button type="button" class="mini claude" id="rempickSet">Set this time</button></div>
+  </div>
+</div>
+<div class="alarm" id="alarm" hidden role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle">
+  <div class="alarm-card">
+    <div class="alarm-ico">⏰</div>
+    <b id="alarmTitle">Reminder</b>
+    <div class="alarm-acts"><button type="button" class="mini" id="alarmSnooze">Snooze 10 min</button><button type="button" class="mini claude" id="alarmStop">Stop</button></div>
+  </div>
+</div>
 <script>
 (function(){
   'use strict';
@@ -360,6 +417,9 @@ body.pop-on .fab{display:none}
   // ---------- clocks ----------
   var OFFICES = [['Dubai','Asia/Dubai',true],['Riyadh','Asia/Riyadh'],['Cape Town','Africa/Johannesburg'],['London','Europe/London']];
   function dubaiDay(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dubai' }); }
+  var localTz = 'UTC'; try { localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch(e){}
+  var localName = (localTz.split('/').pop() || localTz).replace(/_/g, ' ');
+  if($('bcLocalLabel')) $('bcLocalLabel').textContent = localTz === 'Asia/Dubai' ? 'Your time (Dubai)' : 'Your time · ' + localName;
   function tick(){
     var now = new Date(), box = $('clocks'); box.textContent = '';
     OFFICES.forEach(function(o){
@@ -369,6 +429,9 @@ body.pop-on .fab{display:none}
     });
     var h = +now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', hourCycle: 'h23' });
     $('greet').textContent = (h < 5 ? 'Working late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', Yasser · ' + now.toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' });
+    var bl = $('bcLocal'), bd = $('bcDubai');
+    if(bl) bl.textContent = now.toLocaleTimeString('en-GB', { timeZone: localTz, hour: '2-digit', minute: '2-digit' });
+    if(bd) bd.textContent = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', minute: '2-digit' });
   }
   tick(); setInterval(tick, 30000);
 
@@ -474,6 +537,23 @@ body.pop-on .fab{display:none}
   function persistLocal(){ lsSet('cc-cards', JSON.stringify(cards)); }
   function loadLocal(){ try { cards = JSON.parse(lsGet('cc-cards') || '{}') || {}; } catch(e){ cards = {}; } }
 
+  // ---------- per-item pin/hide flags (kept separate from cards, which scheduled tasks overwrite wholesale) ----------
+  var flags = {};
+  function hashStr(s){ var h = 0; for(var i = 0; i < s.length; i++){ h = (h * 31 + s.charCodeAt(i)) | 0; } return (h >>> 0).toString(36); }
+  function itemId(c, it){
+    var k = it.threadId || it.messageId || it.uri || ((it.title || '') + '|' + (it.when || '') + '|' + (it.subtitle || ''));
+    return 'i_' + hashStr(String(c.key) + '::' + String(k));
+  }
+  function flagFor(id){ return flags[id] || {}; }
+  function setFlag(id, patch){
+    var next = Object.assign({}, flags[id] || {}, patch, { at: Date.now() });
+    flags[id] = next; renderCanvas();
+    if(db && !memOnly) return db.collection('flags').doc(id).set(next).catch(function(){ persistLocalFlags(); });
+    persistLocalFlags(); return Promise.resolve();
+  }
+  function persistLocalFlags(){ lsSet('cc-flags', JSON.stringify(flags)); }
+  function loadLocalFlags(){ try { flags = JSON.parse(lsGet('cc-flags') || '{}') || {}; } catch(e){ flags = {}; } }
+
   function fmtWhen(v){
     if(!v) return '';
     var d = new Date(v); if(isNaN(d)) return String(v);
@@ -512,7 +592,14 @@ body.pop-on .fab{display:none}
     var counts = {}; SECS.forEach(function(k){ counts[k] = 0; });
     list.forEach(function(c){
       var sk = secOf(c), cv = $('cv-' + sk); if(!cv) return;
-      counts[sk] += c.key === 'posting-rhythm' ? (c.items || []).filter(function(it){ return postState(it).due; }).length : (Array.isArray(c.items) && c.items.length) ? c.items.filter(function(it){ return it.priority === 'high' || it.priority === 'med'; }).length || c.items.length : 1;
+      if(c.key === 'posting-rhythm'){
+        counts[sk] += (c.items || []).filter(function(it){ return postState(it).due; }).length;
+      } else if(Array.isArray(c.items)){
+        var visN = c.items.filter(function(it){ return !flagFor(itemId(c, it)).hide; });
+        counts[sk] += visN.length ? (visN.filter(function(it){ return it.priority === 'high' || it.priority === 'med'; }).length || visN.length) : 0;
+      } else {
+        counts[sk] += 1;
+      }
       var el = document.createElement('article'); el.className = 'card' + (c.wide ? ' wide' : '');
       el.innerHTML = '<div class="ch"><div style="min-width:0"><h3></h3><div class="meta"></div></div><div class="tools"><button type="button" class="rf" title="Pull again" aria-label="Pull this card again">↻</button><button type="button" class="rm" title="Remove" aria-label="Remove this card">×</button></div></div>';
       el.querySelector('h3').textContent = c.title || 'Untitled';
@@ -526,15 +613,31 @@ body.pop-on .fab{display:none}
       if(c.summary){ var s = document.createElement('div'); s.className = 'sum'; md(s, c.summary); el.appendChild(s); }
       if(Array.isArray(c.items) && c.items.length){
         var ul = document.createElement('ul'); ul.className = 'items';
-        c.items.forEach(function(it0){
+        var itemsSorted = c.items.slice().sort(function(a, b){
+          var fa = flagFor(itemId(c, a)), fb = flagFor(itemId(c, b));
+          var wa = fa.pin ? 0 : fa.hide ? 2 : 1, wb = fb.pin ? 0 : fb.hide ? 2 : 1;
+          return wa - wb;
+        });
+        itemsSorted.forEach(function(it0){
           var it = it0, isPost = c.key === 'posting-rhythm';
           if(isPost){ var ps = postState(it0); it = Object.assign({}, it0, { priority: ps.pr, subtitle: ps.line + (it0.lastPostTitle ? ' \u00b7 \u201c' + it0.lastPostTitle + '\u201d' : ''), when: it0.lastPost || '' }); }
-          var li = document.createElement('li'); li.className = 'item';
-          li.innerHTML = '<span class="flag"></span><div style="min-width:0"><b></b><small></small></div><span class="when"></span>';
+          var iid = itemId(c, it0), fl = flagFor(iid);
+          var li = document.createElement('li'); li.className = 'item' + (fl.pin ? ' pinned' : '') + (fl.hide ? ' hidden' : '');
+          li.innerHTML = '<span class="flag"></span><div style="min-width:0"><b></b><small></small></div><span class="when"></span><span class="pinhide"></span>';
           if(it.priority) li.querySelector('.flag').classList.add(String(it.priority));
           li.querySelector('b').textContent = it.title || '';
           var sm = li.querySelector('small'); if(it.subtitle) sm.textContent = it.subtitle; else sm.remove();
           li.querySelector('.when').textContent = it.when ? fmtWhen(it.when) : '';
+          var ph = li.querySelector('.pinhide');
+          var pinBtn = document.createElement('button'); pinBtn.type = 'button';
+          pinBtn.className = 'pin' + (fl.pin ? ' on' : ''); pinBtn.textContent = '\u2605';
+          pinBtn.title = fl.pin ? 'Unpin' : 'Pin as important'; pinBtn.setAttribute('aria-label', pinBtn.title);
+          pinBtn.addEventListener('click', function(){ setFlag(iid, { pin: !fl.pin }); });
+          var hideBtn = document.createElement('button'); hideBtn.type = 'button';
+          hideBtn.className = 'hide'; hideBtn.textContent = fl.hide ? '\u21ba' : '\u2713';
+          hideBtn.title = fl.hide ? 'Unhide' : 'Done, hide this'; hideBtn.setAttribute('aria-label', hideBtn.title);
+          hideBtn.addEventListener('click', function(){ setFlag(iid, { hide: !fl.hide }); });
+          ph.append(pinBtn, hideBtn);
           var acts = document.createElement('div'); acts.className = 'acts';
           if(it.url && /^https:\/\//.test(it.url)){ var a = document.createElement('a'); a.className = 'mini'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = it.linkLabel || 'Open ↗'; acts.appendChild(a); }
           if(it.messageId || it.threadId){
@@ -583,6 +686,16 @@ body.pop-on .fab{display:none}
             acts.appendChild(pm);
           }
           if(it.queued){ var qn = document.createElement('small'); qn.className = 'qn'; qn.textContent = it.queued === 'failed' ? 'Couldn\u2019t move to Other. Try again or move it in Outlook.' : 'Moving to Other in Outlook at the next sync'; acts.appendChild(qn); }
+          if(!isPost && it.title){
+            var remState = typeof window.__ccRemindState === 'function' ? window.__ccRemindState(iid) : null;
+            var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'mini rembtn' + (remState ? ' set' : '');
+            rm.textContent = remState ? '\u23f0 Set' : '\u23f0 Remind';
+            rm.title = remState ? 'Change or cancel this reminder' : 'Remind me about this later, with an alarm';
+            rm.addEventListener('click', function(){
+              if(typeof window.__ccRemindOpen === 'function') window.__ccRemindOpen(iid, it.title);
+            });
+            acts.appendChild(rm);
+          }
           if(acts.children.length) li.appendChild(acts);
           ul.appendChild(li);
         });
@@ -1045,7 +1158,8 @@ body.pop-on .fab{display:none}
   function saveMeta(patch){ for(var k in patch) meta[k] = patch[k]; if(db && !memOnly) db.doc('meta/state').set(meta).catch(function(){}); else lsSet('cc-meta', JSON.stringify(meta)); }
 
   // ---------- boot ----------
-  loadLocal(); renderCanvas();
+  window.__ccOnRemindersChanged = renderCanvas;
+  loadLocal(); loadLocalFlags(); renderCanvas();
   var cl = window.claude, ready = { db: false, mcp: false, sample: false };
   function maybeAutoBrief(){
     if(!(ready.db && ready.mcp && ready.sample)) return;
@@ -1057,14 +1171,18 @@ body.pop-on .fab{display:none}
   if(cl && typeof cl.use === 'function'){
     cl.use('db').then(function(d){
       db = d;
-      if(!d){ memOnly = true; try { meta = JSON.parse(lsGet('cc-meta') || '{}') || {}; } catch(e){} ready.db = true; maybeAutoBrief(); return; }
+      if(!d){ memOnly = true; try { meta = JSON.parse(lsGet('cc-meta') || '{}') || {}; } catch(e){} loadLocalFlags(); renderCanvas(); ready.db = true; maybeAutoBrief(); return; }
       var first = true;
       d.collection('cards').onSnapshot(function(snap){
         var next = {}; snap.docs.forEach(function(doc){ var v = doc.data(); if(v) next[doc.id] = JSON.parse(JSON.stringify(v)); });
         cards = next; renderCanvas();
         if(first){ first = false; d.doc('meta/state').get().then(function(s){ meta = (s.exists && JSON.parse(JSON.stringify(s.data()))) || {}; }).catch(function(){}).then(function(){ ready.db = true; maybeAutoBrief(); }); }
       }, function(){ memOnly = true; loadLocal(); renderCanvas(); ready.db = true; maybeAutoBrief(); });
-    }, function(){ memOnly = true; ready.db = true; maybeAutoBrief(); });
+      d.collection('flags').onSnapshot(function(snap){
+        var next = {}; snap.docs.forEach(function(doc){ var v = doc.data(); if(v) next[doc.id] = JSON.parse(JSON.stringify(v)); });
+        flags = next; renderCanvas();
+      }, function(){});
+    }, function(){ memOnly = true; loadLocalFlags(); ready.db = true; maybeAutoBrief(); });
     cl.use('mcp').then(function(m){ mcp = m; if(!m) markM365(false, { code: 'not_granted', message: 'Microsoft 365 is not available in this view.' }); ready.mcp = true; maybeAutoBrief(); }, function(){ ready.mcp = true; });
     cl.use('sample').then(function(s){ sample = s; ready.sample = true; maybeAutoBrief(); }, function(){ ready.sample = true; });
   }
@@ -1093,5 +1211,112 @@ body.pop-on .fab{display:none}
     btn.addEventListener('click', function(){ show(box.classList.contains('hide')); });
     $('musHide').addEventListener('click', function(){ show(false); });
     $('musStop').addEventListener('click', function(){ slot.innerHTML = ''; show(false); });
+  })();
+
+  // ---- Reminders: pick a time, ring with sound + on-screen flash until stopped or snoozed ----
+  (function(){
+    var $ = function(id){ return document.getElementById(id); };
+    function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+    function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+    var STORE = 'cc-reminders';
+    var reminders = {};
+    try { reminders = JSON.parse(lsGet(STORE) || '{}') || {}; } catch(e){ reminders = {}; }
+    function persist(){ lsSet(STORE, JSON.stringify(reminders)); }
+    function refresh(){ if(typeof window.__ccOnRemindersChanged === 'function') window.__ccOnRemindersChanged(); }
+
+    var pick = $('rempick'), pickCustom = $('rempickCustom'), pendingKey = null, pendingTitle = null;
+    var alarmBox = $('alarm'), alarmTitleEl = $('alarmTitle');
+    var audioCtx = null, ringTimer = null, ringingKey = null, ringingEl = null;
+
+    function beep(){
+      try {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var t0 = audioCtx.currentTime;
+        [0, .18].forEach(function(off){
+          var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          o.type = 'square'; o.frequency.value = 880;
+          g.gain.value = .0001;
+          g.gain.exponentialRampToValueAtTime(.28, t0 + off + .02);
+          g.gain.exponentialRampToValueAtTime(.0001, t0 + off + .16);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(t0 + off); o.stop(t0 + off + .18);
+        });
+      } catch(e){}
+    }
+
+    function setReminder(key, title, whenMs){
+      reminders[key] = { title: title, due: whenMs, status: 'pending' };
+      persist(); refresh();
+    }
+    function cancelReminder(key){
+      if(reminders[key]){ delete reminders[key]; persist(); }
+      refresh();
+    }
+    window.__ccRemindState = function(key){ var r = reminders[key]; return (r && r.status === 'pending') ? r : null; };
+    window.__ccRemindOpen = function(key, title){
+      pendingKey = key; pendingTitle = title;
+      pickCustom.value = '';
+      $('rempickClear').hidden = !reminders[key];
+      $('rempickTitle').textContent = 'Remind me: ' + title;
+      pick.hidden = false;
+    };
+
+    function closePick(){ pick.hidden = true; pendingKey = null; }
+    $('rempickCancel').addEventListener('click', closePick);
+    $('rempickClear').addEventListener('click', function(){ if(pendingKey) cancelReminder(pendingKey); closePick(); });
+    pick.addEventListener('click', function(e){ if(e.target === pick) closePick(); });
+    Array.prototype.forEach.call(document.querySelectorAll('.rempick-chips button'), function(b){
+      b.addEventListener('click', function(){
+        var now = Date.now(), due;
+        if(b.dataset.m){ due = now + (+b.dataset.m) * 60000; }
+        else if(b.dataset.tom){
+          var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(+b.dataset.tom, 0, 0, 0); due = d.getTime();
+        }
+        if(pendingKey && due) setReminder(pendingKey, pendingTitle, due);
+        closePick();
+      });
+    });
+    $('rempickSet').addEventListener('click', function(){
+      var v = pickCustom.value; if(!v) return;
+      var d = new Date(v); if(isNaN(d)) return;
+      if(pendingKey) setReminder(pendingKey, pendingTitle, d.getTime());
+      closePick();
+    });
+
+    function ring(key){
+      var r = reminders[key]; if(!r) return;
+      ringingKey = key;
+      alarmTitleEl.textContent = r.title || 'Reminder';
+      alarmBox.hidden = false;
+      beep(); ringTimer = setInterval(beep, 900);
+      var bs = document.querySelectorAll('.item b');
+      for(var i = 0; i < bs.length; i++){
+        if(bs[i].textContent === r.title){ ringingEl = bs[i].closest('.item'); ringingEl.classList.add('ringing'); break; }
+      }
+    }
+    function stopRing(){
+      if(ringTimer){ clearInterval(ringTimer); ringTimer = null; }
+      if(ringingEl){ ringingEl.classList.remove('ringing'); ringingEl = null; }
+      alarmBox.hidden = true;
+    }
+    $('alarmStop').addEventListener('click', function(){
+      var k = ringingKey; ringingKey = null; stopRing();
+      if(k) cancelReminder(k);
+    });
+    $('alarmSnooze').addEventListener('click', function(){
+      var k = ringingKey, title = k && reminders[k] ? reminders[k].title : '';
+      ringingKey = null; stopRing();
+      if(k) setReminder(k, title, Date.now() + 10 * 60000);
+    });
+
+    setInterval(function(){
+      if(!alarmBox.hidden) return;
+      var now = Date.now();
+      for(var k in reminders){
+        if(reminders[k].status === 'pending' && reminders[k].due <= now){ ring(k); return; }
+      }
+    }, 5000);
+
+    refresh();
   })();
 </script>

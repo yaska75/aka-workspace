@@ -1,6 +1,13 @@
 # Roadmap
 
 ## Shipped
+- **Command Centre: pin, hide, remind, and Dubai/local clocks** (27 Sep 2026). Every item can be pinned (star, moves to the
+  top), hidden (collapses to a thin line at the bottom, undo with the same button), or given a reminder (pick a quick
+  option or a custom time; it rings with sound and flashes on screen until you Stop or Snooze). Reminders and pins/hides
+  live in their own place in the database, separate from the cards the scheduled syncs overwrite, so they survive every
+  hourly refresh. Honest limit: a reminder only rings while this page is open in a browser tab — it cannot wake your phone
+  or fire while the tab is closed. The page footer also shows two big clocks side by side: your browser's local time and
+  Dubai time, so you always know both at a glance while travelling.
 - **Team board sign-in** (27 Sep 2026). Everyone picks their name and sets a password on first sign-in.
   Passwords are stored in plain text in the page, on purpose: Yasser (superuser) can see and change everyone's
   password from the Team panel, and admins can see and change passwords for members (not for other admins or Yasser).
