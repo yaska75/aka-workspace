@@ -288,7 +288,7 @@ body.pop-on .fab{display:none}
     <div class="brand"><span class="logo" role="img" aria-label="a.k.a. Media"></span>
       <div class="t"><b>Command Centre</b><span id="greet">Yasser Obeid</span></div></div>
     <div class="right">
-      <button type="button" class="src-pill post-pill" id="postPill" hidden title="Open Social"></button><button type="button" class="src-pill mus-btn" id="musBtn" aria-controls="mus" aria-expanded="false" title="Avicii Essentials on Apple Music"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>Music</button><span class="src-pill" id="gPill"><i></i>Gmail</span><span class="src-pill" id="m365Pill"><i></i>Microsoft 365</span>
+      <button type="button" class="src-pill post-pill" id="postPill" hidden title="Open Social"></button><button type="button" class="src-pill mus-btn" id="musBtn" aria-controls="mus" aria-expanded="false" title="AVICII - Essentials on Spotify"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>Music</button><span class="src-pill" id="gPill"><i></i>Gmail</span><span class="src-pill" id="m365Pill"><i></i>Microsoft 365</span>
       <select class="skinpick" id="skinPick" aria-label="Theme"><option value="">Classic</option><option value="sunset">Sunset</option><option value="ocean">Ocean</option><option value="neon">Neon</option></select>
       <div class="clocks" id="clocks" aria-label="Office times"></div>
     </div>
@@ -406,9 +406,9 @@ body.pop-on .fab{display:none}
 </div>
 
 <section class="mus hide" id="mus" aria-label="Music player">
-  <div class="mus-h"><span>Avicii Essentials</span><span class="acts"><a id="musOpen" href="https://music.apple.com/ae/playlist/avicii-essentials/pl.d29a376c60b6430d9efff225cce78fa2" target="_blank" rel="noopener">Open in Music</a><button type="button" id="musHide" title="Hide, keep playing">Hide</button><button type="button" id="musStop" title="Stop and close">Stop</button></span></div>
+  <div class="mus-h"><span>AVICII - Essentials</span><span class="acts"><a id="musOpen" href="https://open.spotify.com/playlist/0Nfd1i1ofRRIXN8Kyk5ms1" target="_blank" rel="noopener">Open in Spotify</a><button type="button" id="musHide" title="Hide, keep playing">Hide</button><button type="button" id="musStop" title="Stop and close">Stop</button></span></div>
   <div id="musSlot"></div>
-  <div class="mus-note">Full songs play when you're signed in to Apple Music in this browser. Otherwise you get 30-second previews.</div>
+  <div class="mus-note">Full songs play when you're signed in to Spotify in this browser. Otherwise you get 30-second previews.</div>
 </section>
 <button type="button" class="fab" id="fab" aria-haspopup="dialog" aria-controls="pop"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="currentColor"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="currentColor"/></svg><span>Claude</span></button>
 <div class="pop" id="pop" hidden role="dialog" aria-modal="false" aria-labelledby="popTitle">
@@ -1288,18 +1288,19 @@ body.pop-on .fab{display:none}
   }
 })();
 
-  // ---- Music (Apple Music embed) ----
+  // ---- Music (Spotify embed) ----
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var EMBED = 'https://embed.music.apple.com/ae/playlist/avicii-essentials/pl.d29a376c60b6430d9efff225cce78fa2';
+    var EMBED = 'https://open.spotify.com/embed/playlist/0Nfd1i1ofRRIXN8Kyk5ms1?utm_source=generator';
     var box = $('mus'), btn = $('musBtn'), slot = $('musSlot');
     function load(){
       if (slot.firstChild) return;
       var f = document.createElement('iframe');
-      f.title = 'Avicii Essentials, Apple Music';
+      f.title = 'AVICII - Essentials, Spotify';
       f.src = EMBED;
-      f.setAttribute('allow', 'autoplay *; encrypted-media *; fullscreen *; clipboard-write');
-      f.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation');
+      f.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+      f.setAttribute('loading', 'lazy');
+      f.setAttribute('sandbox', 'allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-storage-access-by-user-activation');
       slot.appendChild(f);
     }
     function show(on){

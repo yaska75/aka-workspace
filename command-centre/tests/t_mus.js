@@ -5,7 +5,7 @@ const { chromium } = require('playwright'); const fs=require('fs');
  for (const [w,name] of [[1440,'mus.png'],[390,'mus_m.png']]){
  const p=await b.newPage({viewport:{width:w,height:860}}); p.on('pageerror',e=>errs.push(e.message));
  await p.route('https://cc.test/', r=>r.fulfill({contentType:'text/html',body:html}));
- await p.route('https://embed.music.apple.com/**', r=>r.fulfill({contentType:'text/html',body:'<body style="background:#333;color:#fff;font:20px sans-serif">Apple Music embed stub</body>'}));
+ await p.route('https://open.spotify.com/embed/**', r=>r.fulfill({contentType:'text/html',body:'<body style="background:#333;color:#fff;font:20px sans-serif">Spotify embed stub</body>'}));
  await p.addInitScript(()=>{ localStorage.setItem('cc-meta', JSON.stringify({lastBrief:new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Dubai'})})); window.claude={use:()=>Promise.resolve(null)}; });
  await p.goto('https://cc.test/'); await p.waitForTimeout(400);
  console.log(w,'iframes before', await p.locator('#musSlot iframe').count());

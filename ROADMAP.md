@@ -1,6 +1,10 @@
 # Roadmap
 
 ## Shipped
+- **Command Centre: Spotify instead of Apple Music** (27 Sep 2026). The music player (header note button) now embeds a
+  Spotify playlist (AVICII - Essentials) instead of Apple Music, with an "Open in Spotify" link and the same
+  play/hide/stop controls as before. Full songs need you signed in to Spotify in that browser; otherwise you get
+  30-second previews.
 - **Command Centre: theme picker (Classic, Sunset, Ocean, Neon)** (27 Sep 2026). A dropdown next to the Gmail and
   Microsoft 365 status pills lets you pick a skin for this device, matching the team board's four themes: Classic
   (the usual a.k.a. red, auto light/dark), Sunset (warm sand and terracotta, serif headings), Ocean (cool
@@ -60,7 +64,6 @@
   then hand the resulting Account SID / Auth Token / WhatsApp number back to Claude to wire in.
 - Instagram DMs in the Command Centre (needs an Instagram Business/Creator account connected via Composio).
 - Forward yasser@akamedia.ae (Namecheap Private Email) into Gmail so work mail can be read and drafted without the Mac.
-- Spotify player (needs Spotify Premium and a Composio developer key). Apple Music embed is live now.
 
 ## Known limits
 - Outlook, WhatsApp, Telegram and LinkedIn syncs need Yasser's Mac awake with Claude desktop, the apps and Chrome open.
