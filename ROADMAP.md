@@ -1,6 +1,13 @@
 # Roadmap
 
 ## Shipped
+- **Team board: peer reminders with a sound alarm and the task turning red** (27 Sep 2026). On any task that isn't
+  your own, a new "⏰ Remind" button lets you set a reminder for whoever owns it — a quick pick (15 min, 1 hour,
+  3 hours, tomorrow 9am) or a custom time. Until it's due, the task gets a dashed red edge on that person's board;
+  once it's due, the whole card turns solid red and pulses, and the owner gets the same full-screen sound alarm as
+  the existing "Attention alert" — with Snooze (10 min) and Done, stop. This is one-way and by design: you can
+  remind teammates, and they can remind you, but nobody can set a reminder on their own task — that's what the
+  Remind button is deliberately missing when you're looking at your own list.
 - **Team board: task cards color-coded by how long they've sat uncleared** (27 Sep 2026). An open task's card now
   gets a colored left edge: light blue under 24 hours old, orange 24–48 hours, red past 48 hours. It's based on when
   the task was created, not its due date (that's the separate "Overdue" label). Done tasks never get a color. This

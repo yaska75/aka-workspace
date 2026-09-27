@@ -121,6 +121,10 @@ button{font:inherit;cursor:pointer}
 .age-fresh{border-left:3px solid #3b82f6;background:rgba(59,130,246,.07)}
 .age-warn{border-left:3px solid #f59e0b;background:rgba(245,158,11,.10)}
 .age-stale{border-left:3px solid #dc2626;background:rgba(220,38,38,.10)}
+.item.remind-set{border-left:3px dashed var(--accent);background:rgba(235,24,67,.06)}
+.item.remind-due{border-left:3px solid var(--strike)!important;background:rgba(176,16,44,.18)!important;animation:remindPulse 1.4s ease-in-out infinite}
+@keyframes remindPulse{0%,100%{background:rgba(176,16,44,.18)}50%{background:rgba(176,16,44,.34)}}
+@media (prefers-reduced-motion:reduce){.item.remind-due{animation:none}}
 .from{color:var(--muted);font-weight:400}
 .actions{display:flex;flex-wrap:wrap;gap:2px;margin:4px 0 0 -7px;opacity:.55;transition:opacity .15s}
 .mvbox{display:flex;flex-direction:column;gap:2px;opacity:.55;transition:opacity .15s}
@@ -149,6 +153,18 @@ button{font:inherit;cursor:pointer}
 .attach .hint{grid-column:1/-1;margin:0 0 2px;font-size:13px;color:var(--muted)}
 .attach .hint b{color:var(--ink)}
 .attach .row .copyPath{margin-right:0}
+.remindpanel{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:10px;border:1px dashed var(--c);border-radius:12px;background:var(--paper)}
+.remindpanel .opts{display:flex;gap:6px;flex-wrap:wrap}
+.remindpanel .opts button{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--ink)}
+.remindpanel .opts button[aria-pressed=true]{background:var(--c);color:#fff;border-color:var(--c)}
+.remindpanel input[type=datetime-local]{font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 9px}
+.remindpanel .row{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.remindpanel .hint{margin:0;font-size:13px;color:var(--muted)}
+.remindpanel .err{color:var(--strike);font-size:13px;margin:0}
+.icon.remindset{color:var(--c)}
+.alarm .box .row2{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.alarm .box .row2 button{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:10px;padding:8px 14px;font-weight:600}
+.alarm .box .row2 button.ack{background:#fff;color:var(--strike);border-color:#fff}
 .readonly .file .x{display:none}
 .badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--strike);color:#fff;font-size:11px;font-weight:700;margin-left:2px}
 .chat{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-18px 0 50px rgba(0,0,0,.18);display:flex;flex-direction:column;z-index:45}
@@ -642,7 +658,7 @@ button{font:inherit;cursor:pointer}
     var old = ui[pid] || {};
     var u = ui[pid] = {
       filter: old.filter || ss.get('todo-filter-' + pid) || 'all',
-      editingId: null, armedDelete: null, armTimer: null, editingWhere: false, noteId: null,
+      editingId: null, armedDelete: null, armTimer: null, editingWhere: false, noteId: null, remindId: null,
       col: col, list: col.querySelector('.list'),
       newText: col.querySelector('.newText'), newDue: col.querySelector('.newDue')
     };
@@ -886,7 +902,9 @@ button{font:inherit;cursor:pointer}
       var ageH = (Date.now() - (t.createdAt || Date.now())) / 3600000;
       ageCls = ageH >= 48 ? ' age-stale' : ageH >= 24 ? ' age-warn' : ' age-fresh';
     }
-    li.className = 'item' + (t.done ? ' done' : '') + (!t.done && when < today ? ' overdue' : '') + ageCls;
+    var rem = !t.done ? reminderFor(t.id) : null;
+    var remCls = rem ? (rem.due <= Date.now() ? ' remind-due' : ' remind-set') : '';
+    li.className = 'item' + (t.done ? ' done' : '') + (!t.done && when < today ? ' overdue' : '') + ageCls + remCls;
     li.dataset.key = t.id;
 
     var check = document.createElement('button');
@@ -965,6 +983,7 @@ button{font:inherit;cursor:pointer}
       body.appendChild(noteP);
     }
     if(u.attachId === t.id) body.appendChild(renderAttach(pid, t));
+    if(u.remindId === t.id) body.appendChild(renderRemind(pid, t));
 
     var actions = document.createElement('div'); actions.className = 'actions';
     var mvbox = document.createElement('div'); mvbox.className = 'mvbox';
@@ -978,6 +997,15 @@ button{font:inherit;cursor:pointer}
       noteBtn.setAttribute('aria-label', (t.note ? 'Edit note for: ' : 'Add note to: ') + t.text);
       noteBtn.addEventListener('click', function(){ u.noteId = u.noteId === t.id ? null : t.id; renderCol(pid); });
       actions.appendChild(noteBtn);
+      var vMe = me();
+      if(!t.done && vMe && vMe.id !== pid){
+        var existingRem = reminderFor(t.id);
+        var remBtn = document.createElement('button'); remBtn.className = 'icon' + (existingRem ? ' remindset' : ''); remBtn.type = 'button';
+        remBtn.textContent = existingRem ? '⏰ Change reminder' : '⏰ Remind';
+        remBtn.setAttribute('aria-label', (existingRem ? 'Change the reminder for: ' : 'Set a sound-alarm reminder for: ') + t.text);
+        remBtn.addEventListener('click', function(){ u.remindId = u.remindId === t.id ? null : t.id; renderCol(pid); });
+        actions.appendChild(remBtn);
+      }
     }
     var edit = document.createElement('button'); edit.className = 'icon'; edit.type = 'button';
     edit.textContent = 'Edit'; edit.setAttribute('aria-label', 'Edit: ' + t.text);
@@ -1121,6 +1149,64 @@ button{font:inherit;cursor:pointer}
     }); });
     box.append(hint, url, name, add, err, row);
     setTimeout(function(){ url.focus(); }, 0);
+    return box;
+  }
+
+  // ---------- task reminders (peer-set alarm: anyone but the task's own person can set one) ----------
+  function reminderFor(taskId){
+    if(!state.reminders) return null;
+    for(var id in state.reminders){
+      var r = state.reminders[id];
+      if(r.taskId === taskId && r.status === 'pending') return Object.assign({ id: id }, r);
+    }
+    return null;
+  }
+  function toLocalInput(ms){
+    var d = new Date(ms), pad = function(n){ return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function renderRemind(pid, t){
+    var u = ui[pid], v = me(), owner = person(pid);
+    var existing = reminderFor(t.id);
+    var box = document.createElement('div'); box.className = 'remindpanel';
+    var hint = document.createElement('p'); hint.className = 'hint';
+    hint.textContent = existing
+      ? 'Reminder set for ' + chatTime(existing.due) + ' — a sound alarm will ring on ' + (owner ? owner.name : 'their') + '’s screen and the task will turn red. Pick a new time, or cancel it.'
+      : 'Pick when ' + (owner ? owner.name : 'they') + ' should get a sound alarm about this task — it also turns the task red until they answer it.';
+    var opts = document.createElement('div'); opts.className = 'opts';
+    var chosenDue = null;
+    var choices = [['15 min', function(){ return Date.now() + 15 * 60000; }], ['1 hour', function(){ return Date.now() + 3600000; }],
+      ['3 hours', function(){ return Date.now() + 3 * 3600000; }], ['Tomorrow 9am', function(){ var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9, 0, 0, 0); return d.getTime(); }]];
+    choices.forEach(function(c){
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = c[0];
+      b.addEventListener('click', function(){
+        chosenDue = c[1](); custom.value = toLocalInput(chosenDue);
+        Array.prototype.forEach.call(opts.querySelectorAll('button'), function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      });
+      opts.appendChild(b);
+    });
+    var custom = document.createElement('input'); custom.type = 'datetime-local'; custom.setAttribute('aria-label', 'Custom reminder time');
+    if(existing) custom.value = toLocalInput(existing.due);
+    custom.addEventListener('input', function(){ chosenDue = null; Array.prototype.forEach.call(opts.querySelectorAll('button'), function(x){ x.setAttribute('aria-pressed', 'false'); }); });
+    var err = document.createElement('p'); err.className = 'err'; err.hidden = true;
+    var row = document.createElement('div'); row.className = 'row';
+    var setBtn = document.createElement('button'); setBtn.type = 'button'; setBtn.className = 'primary'; setBtn.textContent = existing ? 'Update reminder' : 'Set reminder';
+    var cancelRem = document.createElement('button'); cancelRem.type = 'button'; cancelRem.className = 'link'; cancelRem.hidden = !existing; cancelRem.textContent = 'Cancel reminder';
+    var close = document.createElement('button'); close.type = 'button'; close.className = 'link'; close.textContent = 'Close';
+    function commit(){
+      var due = chosenDue || (custom.value ? new Date(custom.value).getTime() : NaN);
+      if(!due || isNaN(due)){ err.textContent = 'Pick a quick option or a time.'; err.hidden = false; return; }
+      if(due <= Date.now()){ err.textContent = 'Pick a time in the future.'; err.hidden = false; return; }
+      var id = existing ? existing.id : uid('rm');
+      change({ type: 'remind-set', id: id, taskId: t.id, pid: pid, by: v.id, title: t.text, due: due });
+      u.remindId = null; renderCol(pid);
+    }
+    setBtn.addEventListener('click', commit);
+    cancelRem.addEventListener('click', function(){ if(existing) change({ type: 'remind-clear', id: existing.id }); u.remindId = null; renderCol(pid); });
+    close.addEventListener('click', function(){ u.remindId = null; renderCol(pid); });
+    custom.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); commit(); } if(e.key === 'Escape'){ e.preventDefault(); u.remindId = null; renderCol(pid); } });
+    row.append(cancelRem, close, setBtn);
+    box.append(hint, opts, custom, err, row);
     return box;
   }
 
@@ -1644,6 +1730,49 @@ button{font:inherit;cursor:pointer}
     }); });
     if(best) raiseAlarm(best.m.alert, best.m.by, best.ch, best.m.at);
   }
+  // ---- task reminders: same sound + full-screen alarm, plus the task itself turns red (renderItem) until answered
+  function raiseRemindAlarm(id, r){
+    var v = me(); if(!v || !r || r.pid !== v.id || r.status !== 'pending') return;
+    if(ls.get('remind-ack-' + id)) return;
+    if(alarmOn && alarmOn.id === id) return;
+    alarmOn = { id: id, kind: 'remind' };
+    var from = person(r.by), nm = from ? from.name : 'Someone';
+    var ov = $('alarmBox'); if(ov) ov.remove();
+    ov = document.createElement('div'); ov.className = 'alarm'; ov.id = 'alarmBox'; ov.setAttribute('role', 'alertdialog'); ov.setAttribute('aria-modal', 'true');
+    ov.innerHTML = '<div class="box ' + (from ? 'k' + (from.color % 7) : '') + '">' + (from ? avatarHtml(from) : '') + '<h2></h2><p class="msgtxt"></p><p class="sub"></p><div class="row2"><button type="button" class="snooze">Snooze 10 min</button><button type="button" class="ack">Done, stop</button></div></div>';
+    ov.querySelector('h2').textContent = nm + ' is reminding you about a task';
+    ov.querySelector('.msgtxt').textContent = '“' + (r.title || '') + '”';
+    ov.querySelector('.sub').textContent = 'Set for ' + chatTime(r.due);
+    ov.querySelector('.ack').addEventListener('click', function(){ ackRemindAlarm(id); });
+    ov.querySelector('.snooze').addEventListener('click', function(){ snoozeRemindAlarm(id); });
+    document.body.appendChild(ov);
+    setTimeout(function(){ var b = ov.querySelector('.ack'); if(b) b.focus(); }, 50);
+    soundLoop(); flashTitle(nm);
+  }
+  function ackRemindAlarm(id){
+    ls.set('remind-ack-' + id, String(Date.now()));
+    stopSound(); stopTitle(); alarmOn = null;
+    var ov = $('alarmBox'); if(ov) ov.remove();
+    if(mode !== 'readonly') change({ type: 'remind-clear', id: id });
+    render();
+  }
+  function snoozeRemindAlarm(id){
+    stopSound(); stopTitle(); alarmOn = null;
+    var ov = $('alarmBox'); if(ov) ov.remove();
+    if(mode !== 'readonly') change({ type: 'remind-snooze', id: id, due: Date.now() + 10 * 60000 });
+    render();
+  }
+  function checkStoredReminders(){
+    var v = me(); if(!v || !state.reminders) return;
+    var bestId = null, bestDue = 0;
+    for(var id in state.reminders){
+      var r = state.reminders[id];
+      if(r.pid === v.id && r.status === 'pending' && r.due <= Date.now() && !ls.get('remind-ack-' + id)){
+        if(!bestId || r.due > bestDue){ bestId = id; bestDue = r.due; }
+      }
+    }
+    if(bestId) raiseRemindAlarm(bestId, state.reminders[bestId]);
+  }
   if(window.claude && typeof window.claude.use === 'function'){
     window.claude.use('room').then(function(r){
       if(!r) return; roomNs = r;
@@ -1684,6 +1813,7 @@ button{font:inherit;cursor:pointer}
     try { roomNs.emit('presence', { pid: v.id, online: false, at: Date.now() }).catch(function(){}); } catch(e){}
   });
   setInterval(function(){ broadcastPresence(); paintPresence(); }, 20000);
+  setInterval(checkStoredReminders, 20000);
   function callCard(m, mine){
     var c = m.call || {}, box = document.createElement('div'); box.className = 'callcard';
     var ci = document.createElement('span'); ci.className = 'ci'; ci.innerHTML = c.kind === 'voice' ? PHONE_SVG : VIDEO_SVG;
@@ -1905,6 +2035,8 @@ button{font:inherit;cursor:pointer}
     // me() was available and skipped setting their baselines — set them now so future loads notify correctly.
     if(ls.get(heardKey()) === null) announceNew();
     if(ls.get(taskHeardKey()) === null) announceNewTasks();
+    // boot-time checkStoredAlerts/checkStoredReminders ran before me() existed and found nothing to do — recheck now
+    checkStoredAlerts(); checkStoredReminders();
   }
   function guardAuth(){ if(!me() && !whoOpen) openWho(); }
   $('meBtn').addEventListener('click', openWho);
@@ -2257,6 +2389,19 @@ button{font:inherit;cursor:pointer}
       if(!cur || o.at >= cur.at) st.keys[o.pid] = { pw: String(o.pw), at: o.at };
       return;
     }
+    if(o.type === 'remind-set'){
+      st.reminders = st.reminders || {};
+      st.reminders[o.id] = { taskId: o.taskId, pid: o.pid, by: o.by, title: String(o.title || '').slice(0, 200), due: o.due, status: 'pending' };
+      return;
+    }
+    if(o.type === 'remind-clear'){
+      if(st.reminders && st.reminders[o.id]) st.reminders[o.id].status = 'cleared';
+      return;
+    }
+    if(o.type === 'remind-snooze'){
+      if(st.reminders && st.reminders[o.id]){ st.reminders[o.id].due = o.due; st.reminders[o.id].status = 'pending'; }
+      return;
+    }
     if(o.type === 'mdel'){
       if(st.chat && st.chat[o.ch]) st.chat[o.ch] = st.chat[o.ch].filter(function(m){ return m.id !== o.id; });
       return;
@@ -2415,7 +2560,7 @@ button{font:inherit;cursor:pointer}
   render();
   if(!me()) openWho();
   else if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
-  setTimeout(function(){ announceNew(); announceNewTasks(); announceReads(); checkStoredAlerts(); }, 400);
+  setTimeout(function(){ announceNew(); announceNewTasks(); announceReads(); checkStoredAlerts(); checkStoredReminders(); }, 400);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && chatOpen) recordRead(chatChan); });
 
   (function connect(){
