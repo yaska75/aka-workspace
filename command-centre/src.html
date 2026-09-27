@@ -177,6 +177,7 @@ select.skinpick:hover{color:var(--ink);border-color:var(--red)}
 .rwb textarea,.rwb input{font:inherit;font-size:14.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;resize:vertical}
 .rwb textarea:focus,.rwb input:focus{outline:none;border-color:var(--red)}
 .rwrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mkhint{display:block;color:var(--muted);font-size:13px;line-height:1.4}
 .seg{display:flex;gap:2px;background:var(--soft);border-radius:10px;padding:3px}
 .seg button{border:0;background:none;padding:5px 12px;border-radius:8px;font-size:13px;color:var(--muted)}
 .seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);font-weight:600}
@@ -318,6 +319,7 @@ body.pop-on .fab{display:none}
     <button type="button" class="dk" data-sec="team" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6M14.5 15.2c.8-.5 1.6-.7 2.5-.7 2 0 3.6 1.3 4 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b>Team</b><span class="n" hidden></span></button>
     <button type="button" class="dk" data-sec="social" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11v8H9l-4 3.5V13H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 9h5v8h-1v3l-3.5-3H11v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><b>Social</b><span class="n" hidden></span></button>
     <button type="button" class="dk" data-sec="claude" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="currentColor"/></svg></span><b>Claude</b><span class="n" hidden></span></button>
+    <button type="button" class="dk" data-sec="make" aria-pressed="false"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v6M9 11h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><b>Make</b><span class="n" hidden></span></button>
   </nav>
   <div class="blank" id="blank"><p>Choose a section to open.</p></div>
   <section class="sec" data-sec="todo" hidden aria-label="To do">
@@ -404,7 +406,27 @@ body.pop-on .fab{display:none}
     </div>
     <div class="canvas" id="cv-claude"></div>
   </section>
-  <p class="foot">Claude reads your Gmail, Outlook, calendar and Teams and can save drafts. It never sends anything. <button type="button" id="clearAll">Clear workspace</button></p>
+  <section class="sec" data-sec="make" hidden aria-label="Make">
+    <div class="sh"><h2>Make</h2><button type="button" class="sc" aria-label="Close Make">×</button></div>
+    <div class="rw">
+      <div class="rwb">
+        <h3 style="margin:6px 0 0">Make a quote</h3>
+        <small class="mkhint">Paste the brief. Builds a budget from your standard quote template and posts the link back here — usually within a few minutes, not instantly.</small>
+        <textarea id="mkQuoteBrief" rows="6" placeholder="Client, scope, locations, shoot days, crew, equipment, deliverables…" aria-label="Quote brief"></textarea>
+        <div class="rwrow"><button type="button" class="go small" id="mkQuoteGo">Make quote</button><span class="steps" id="mkQuoteNote"></span></div>
+      </div>
+    </div>
+    <div class="rw" style="margin-top:14px;opacity:.55">
+      <div class="rwb">
+        <h3 style="margin:6px 0 0">Make a presentation</h3>
+        <small class="mkhint">Testing the quote widget first — this one's next.</small>
+        <textarea rows="3" placeholder="Not available yet" aria-label="Presentation brief" disabled></textarea>
+      </div>
+    </div>
+    <div class="canvas" id="cv-make"></div>
+    <p class="sempty" id="se-make" hidden></p>
+  </section>
+  <p class="foot">Claude reads your Gmail, Outlook, calendar and Teams and can save drafts, and can build a quote from a brief in Make. It never sends anything. <button type="button" id="clearAll">Clear workspace</button></p>
 </div>
 
 <section class="mus hide" id="mus" aria-label="Music player">
@@ -664,9 +686,9 @@ body.pop-on .fab{display:none}
     if(same) return t;
     return d.toLocaleDateString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'short', day: 'numeric', month: 'short' }) + (/T\d/.test(String(v)) ? ', ' + t : '');
   }
-  var SECS = ['todo', 'email', 'calendar', 'team', 'social', 'claude'];
-  function secOf(c){ var s0 = String(c.source || '').toLowerCase(); if(s0 === 'todo') return 'todo'; if(s0 === 'gmail' || s0 === 'outlook' || s0 === 'email') return 'email'; if(s0 === 'calendar') return 'calendar'; if(s0 === 'teams' || s0 === 'team') return 'team'; if(s0 === 'social' || s0 === 'instagram' || s0 === 'whatsapp' || s0 === 'linkedin') return 'social'; return 'claude'; }
-  var SEC_EMPTY = { todo: 'Your tasks from the team board appear here within the hour.', email: 'Nothing pulled yet. Press Refresh or ask Claude.', calendar: 'Nothing pulled yet. Press Refresh or ask Claude.', team: 'Team chat and updates appear here within the hour.', social: 'LinkedIn, WhatsApp and Telegram refresh every hour. Instagram opens from here.', claude: '' };
+  var SECS = ['todo', 'email', 'calendar', 'team', 'social', 'claude', 'make'];
+  function secOf(c){ var s0 = String(c.source || '').toLowerCase(); if(s0 === 'todo') return 'todo'; if(s0 === 'gmail' || s0 === 'outlook' || s0 === 'email') return 'email'; if(s0 === 'calendar') return 'calendar'; if(s0 === 'teams' || s0 === 'team') return 'team'; if(s0 === 'social' || s0 === 'instagram' || s0 === 'whatsapp' || s0 === 'linkedin') return 'social'; if(s0 === 'make') return 'make'; return 'claude'; }
+  var SEC_EMPTY = { todo: 'Your tasks from the team board appear here within the hour.', email: 'Nothing pulled yet. Press Refresh or ask Claude.', calendar: 'Nothing pulled yet. Press Refresh or ask Claude.', team: 'Team chat and updates appear here within the hour.', social: 'LinkedIn, WhatsApp and Telegram refresh every hour. Instagram opens from here.', claude: '', make: 'Submit a brief above — the link appears here once it’s built.' };
   // ---- posting rhythm: live days since last post
   var POST_EVERY = 7;
   function daysSince(iso){ if(!iso) return null; var a = new Date(dubaiDay() + 'T00:00:00Z'), b = new Date(String(iso).slice(0, 10) + 'T00:00:00Z'); if(isNaN(b)) return null; return Math.round((a - b) / 86400000); }
@@ -1043,6 +1065,18 @@ body.pop-on .fab{display:none}
       var n = document.createElement('p'); n.className = 'err'; n.textContent = copyFor(e && e.code); target.appendChild(n);
     }).then(function(){ busy = null; steps.textContent = ''; setBusyUi(false); scroll(); if(!$('log').hidden) renderLog(); });
   }
+  // ---- Make: queue a quote/deck job for the scheduled task to build (never built in-browser — needs Composio)
+  function queueMake(type, brief, box, btn, note){
+    brief = String(brief || '').trim();
+    if(!brief){ note.textContent = 'Paste a brief first.'; return; }
+    if(!db || memOnly){ note.textContent = 'Needs the saved workspace — open this in claude.ai signed in.'; return; }
+    btn.disabled = true; note.textContent = 'Queuing…';
+    var job = { type: type, brief: brief, status: 'pending', requestedAt: new Date().toISOString() };
+    db.collection('actions').add(job).then(function(){
+      note.textContent = 'Queued — check back in a few minutes, the link will appear below.';
+      box.value = ''; btn.disabled = false;
+    }, function(){ note.textContent = 'Could not queue that — try again.'; btn.disabled = false; });
+  }
   // ---- send an email to Promotions (Gmail now, Outlook work inbox at the next desktop sync)
   function dropItem(c, it, patch){
     var items = (c.items || []).map(function(x){ return x === it ? (patch ? Object.assign({}, x, patch) : null) : x; }).filter(Boolean);
@@ -1234,6 +1268,7 @@ body.pop-on .fab{display:none}
     }).then(function(){ rwBusy = null; });
   }
   $('rwGo').addEventListener('click', function(){ rwRun(''); });
+  $('mkQuoteGo').addEventListener('click', function(){ queueMake('make-quote', $('mkQuoteBrief').value, $('mkQuoteBrief'), $('mkQuoteGo'), $('mkQuoteNote')); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-tweak]'), function(b){ b.addEventListener('click', function(){ rwRun(b.dataset.tweak); }); });
   $('rwCopy').addEventListener('click', function(){
     var t = $('rwText').textContent, b = $('rwCopy');
