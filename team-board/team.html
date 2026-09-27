@@ -502,6 +502,7 @@ button{font:inherit;cursor:pointer}
       '<div class="topline"><div class="brand"><span class="logo" role="img" aria-label="a.k.a. Media"></span><div class="sub"><b>Team board</b><span>All offices</span></div></div>' +
         '<div class="tools">' +
           '<span class="pill myclock" id="myClock" aria-live="off"></span>' +
+          '<a class="pill" id="ccBtn" href="https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ" target="_blank" rel="noopener noreferrer" hidden style="text-decoration:none">Command Centre ↗</a>' +
           '<button class="pill" id="meBtn" type="button"></button>' +
           '<button class="pill" id="chatBtn" type="button" hidden>Chat<span class="badge" id="chatBadge" hidden></span></button>' +
           '<button class="pill" id="sendBtn" type="button" hidden>Send a task</button>' +
@@ -707,6 +708,7 @@ button{font:inherit;cursor:pointer}
     if(m){ btn.append('You: '); var b = document.createElement('b'); b.textContent = m.name; btn.append(b); btn.title = 'Not you? Switch'; }
     else btn.textContent = 'Choose who you are';
     $('teamBtn').hidden = !canManageTeam();
+    $('ccBtn').hidden = !m || m.role !== 'superuser';
     $('sendBtn').hidden = mode === 'readonly' || !m || !addablePeople().length;
     $('chatBtn').hidden = !m;
     $('notifBtn').hidden = !m;
