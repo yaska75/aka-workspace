@@ -1,6 +1,14 @@
 # Roadmap
 
 ## Shipped
+- **Command Centre: "Make a Quote" widget** (27 Sep 2026). A new "Make" section: paste a brief (client, scope, crew,
+  equipment, add-ons) into "Make a quote" and it builds a Google Sheets budget from your standard quote template
+  (under akamediadigital@gmail.com) and posts the link back as a card, usually within the hour. The in-page Claude
+  chat can't reach Google Sheets/Slides directly, so this works by queuing the brief and a scheduled task (hourly,
+  7am–11pm Dubai) builds it and writes the result back — the same queue-and-return pattern as "To Promotions" for
+  Outlook. It fills in what the brief gives it and leaves anything it can't infer (like a rate the template doesn't
+  have) blank rather than guessing. "Make a Presentation" (Google Slides) is a disabled placeholder for now — next,
+  once this is proven out. Always check the numbers before sending a quote out.
 - **Command Centre: full LinkedIn messages, not just a summary** (27 Sep 2026). The LinkedIn sync now opens your top
   8 conversations and captures the other person's exact message, not just a one-line gloss. Each item with a full
   message gets a "Read full message" button that shows it in place; "Do it with Claude" on that item drafts a reply
