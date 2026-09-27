@@ -9,7 +9,8 @@ Owner: Yasser Obeid, CEO of a.k.a. Media (Dubai). He is not a developer: talk in
 - Never enter passwords; he signs in himself.
 
 ## Team board (`team-board/team.html`)
-Artifact: https://claude.ai/artifact/8GwGDwq8AAmCDmQAqEZjif (capabilities: `artifact`, `room` with topic `alert` at `interact`).
+Artifact: https://claude.ai/artifact/8GwGDwq8AAmCDmQAqEZjif (capabilities: `artifact`, `room` with topic `alert` at `interact`; shared "Anyone with the link" so Yasser can send it to the team).
+Everyone signs in by name + password (`state.keys`, plain text on purpose — see ROADMAP.md). Yasser sees/sets everyone's password from the Team panel; admins see/set members' only. Never enter a password for someone; they do it themselves.
 The page saves itself: the team's live state (tasks, chat, reads, acks) is embedded in the published HTML, not in this repo.
 To publish a change:
 1. Edit `team-board/team.html` (the template, contains `__STATE__`).

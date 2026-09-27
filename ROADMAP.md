@@ -1,12 +1,13 @@
 # Roadmap
 
-## Ready, waiting for a go-ahead
-- **Team board login** (branch `login-screen`). Each person picks their name and signs in with a simple password; first sign-in creates it.
-  Yasser (superuser) and admins can reset a password from the Team panel; there's "Change password" and "Sign out".
-  A 30-second lockout after 5 wrong tries. Passwords are stored hashed (PBKDF2) in the page.
-  - Still to do: run the browser test (`team-board/tests/t_login.js`), then publish.
-  - Yasser should set his password first, before anyone else can pick his name.
-  - Honest limit: this keeps teammates out of each other's accounts, not a determined attacker who can read the page. Real protection comes from sharing the page only with the team.
+## Shipped
+- **Team board sign-in** (27 Sep 2026). Everyone picks their name and sets a password on first sign-in.
+  Passwords are stored in plain text in the page, on purpose: Yasser (superuser) can see and change everyone's
+  password from the Team panel, and admins can see and change passwords for members (not for other admins or Yasser).
+  Anyone can change their own password ("Change my password"). 5 wrong tries locks that name out for 30 seconds.
+  Honest limit: this keeps people from posting as each other by mistake and lets Yasser help with a forgotten
+  password directly, not real security against someone determined who can read the page. Real protection is
+  sharing the link only with the team. The page is shared as "Anyone with the link" so it can be sent to the team.
 
 ## Ideas mentioned, not started
 - Instagram DMs in the Command Centre (needs an Instagram Business/Creator account connected via Composio).
