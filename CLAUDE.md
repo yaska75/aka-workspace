@@ -14,10 +14,11 @@ Everyone signs in by name + password (`state.keys`, plain text on purpose — se
 The page saves itself: the team's live state (tasks, chat, reads, acks) is embedded in the published HTML, not in this repo.
 To publish a change:
 1. Edit `team-board/team.html` (the template, contains `__STATE__`).
-2. Artifact `read` the URL with `path: "index.html"` to get the live page, then `python3 team-board/build.py <that file>`.
-3. `node --check build/team-board.js`; run `team-board/tests/*.js` (they use `python3 team-board/build.py` with the sample fixture, so rebuild with the live file after testing).
-4. Publish `build/team-board.html` to the same URL (omit `capabilities` to keep them). If refused because the page saved a newer version, re-read, rebuild, republish.
-Never publish a build made from `fixtures/sample-state.json`: it would wipe the team's data.
+2. `node --check` the template's `<script id="app">` block (or build from the fixture first) to catch syntax errors before touching live data.
+3. Run `team-board/tests/*.js`. Some of them (`t_age.js`, `t_remind.js`) call `python3 team-board/build.py` themselves with no argument — that overwrites `build/team-board.html` with `fixtures/sample-state.json` as a side effect, even though the test itself never publishes anything.
+4. **Immediately before publishing** — as the literal last shell command before the `Artifact publish` call, with nothing else in between — Artifact `read` the URL with `path: "index.html"` to get the current live page, then `python3 team-board/build.py <that file>`. Do this even if you already built from live data earlier in the same turn: running the tests in step 3 may have clobbered `build/team-board.html` with fixture data since then, and there is no visible sign that it happened (the build prints the fixture's `rev` and task counts, easy to skim past). If anything at all runs between this rebuild and the publish — another test, another build.py call, a long conversation detour — redo this step before publishing.
+5. Publish `build/team-board.html` to the same URL (omit `capabilities` to keep them). If refused because the page saved a newer version, re-read, rebuild, republish.
+Never publish a build made from `fixtures/sample-state.json`: it would wipe the team's data. If it ever happens anyway, the fix is to republish from the most recent live-state file Claude still has on disk (an earlier `Artifact read ... path: "index.html"` result, or a saved tool-result HTML file) rather than trying to reconstruct the state by hand.
 
 ## Command Centre (`command-centre/src.html`)
 Artifact: https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ (private to Yasser).

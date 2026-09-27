@@ -1,6 +1,13 @@
 # Roadmap
 
 ## Shipped
+- **Team board sign-in now routes you straight to Command Centre (Yasser and Pieter only)** (27 Sep 2026). Signing
+  in on the team board is the one login for everyone. Now, for Yasser and Pieter specifically, the moment you enter
+  your password you're taken straight to Command Centre instead of landing on the task page and needing an extra
+  click. Everyone else signs in and sees the task page exactly as before — nothing changed for them. This only
+  fires on the actual sign-in action (typing your password), not every time the team board tab reloads while
+  you're still signed in — so the "My to-do list ↗" button in Command Centre still works normally to get back to
+  the task page without immediately bouncing you back.
 - **Quick switch between the Command Centre and the team board** (27 Sep 2026). The Command Centre header has a
   "My to-do list ↗" button that jumps to the team board, and the team board header shows a matching
   "Command Centre ↗" button — for Yasser and Pieter, since Command Centre is currently only theirs (everyone else

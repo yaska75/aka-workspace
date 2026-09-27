@@ -380,6 +380,10 @@ button{font:inherit;cursor:pointer}
   var END = '</scr' + 'ipt>';
   var ROLE_NAMES = { superuser: 'Superuser', admin: 'Admin', member: 'Member' };
   var TEAM_NAMES = { management: 'Production', post: 'Post', finance: 'Finance' };
+  // Command Centre exists only for Yasser and Pieter so far (more people get one later) —
+  // everyone else just uses this task page, same as today.
+  var CC_URL = 'https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ';
+  var CC_PEOPLE = { yasser: 1, pieter: 1 };
 
   function store(kind){
     return {
@@ -710,11 +714,8 @@ button{font:inherit;cursor:pointer}
     if(m){ btn.append('You: '); var b = document.createElement('b'); b.textContent = m.name; btn.append(b); btn.title = 'Not you? Switch'; }
     else btn.textContent = 'Choose who you are';
     $('teamBtn').hidden = !canManageTeam();
-    // Command Centre exists only for Yasser and Pieter so far (more people get one later) —
-    // everyone else just uses this task page, same as today.
-    var ccPeople = { yasser: 1, pieter: 1 };
-    $('ccBtn').hidden = !m || !ccPeople[m.id];
-    if(m && ccPeople[m.id]) $('ccBtn').href = 'https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ?person=' + encodeURIComponent(m.id);
+    $('ccBtn').hidden = !m || !CC_PEOPLE[m.id];
+    if(m && CC_PEOPLE[m.id]) $('ccBtn').href = CC_URL + '?person=' + encodeURIComponent(m.id);
     $('sendBtn').hidden = mode === 'readonly' || !m || !addablePeople().length;
     $('chatBtn').hidden = !m;
     $('notifBtn').hidden = !m;
@@ -1948,7 +1949,21 @@ button{font:inherit;cursor:pointer}
   var FAIL_KEY = 'team-todo-fails';
   function lockLeft(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } return f.until && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0; }
   function noteFail(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } f.n = (f.n || 0) + 1; if(f.n >= 5){ f.until = Date.now() + 30000; f.n = 0; } ls.set(FAIL_KEY, JSON.stringify(f)); }
-  function signIn(pid, pw){ ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0); }
+  // fresh=true only for an actual sign-in action (picking your name and entering/creating a
+  // password) — never for a same-session password change, so someone already looking at their
+  // tasks isn't yanked away to Command Centre just for updating their password.
+  function signIn(pid, pw, fresh){
+    ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0);
+    // location.hostname check excludes the Playwright test fixture (served from todo.test),
+    // which signs in as Yasser/Pieter to test unrelated things and must stay on this page.
+    if(fresh && CC_PEOPLE[pid] && location.hostname !== 'todo.test'){
+      // If this sign-in just set a brand-new password (first time), don't leave that save
+      // sitting in its usual debounce window — flush it now so it isn't lost to the navigation.
+      var hadPending = pendingSave;
+      if(hadPending){ clearTimeout(saveTimer); save(); }
+      setTimeout(function(){ location.href = CC_URL + '?person=' + encodeURIComponent(pid); }, hadPending ? 400 : 0);
+    }
+  }
   function signOut(){ ls.del(AUTH_KEY); ls.del(ME_KEY); openWho(); render(); }
   function whoSheet(html){ var b = $('whoBody'); b.innerHTML = html; return b; }
   function pwToggle(input, btn){ btn.addEventListener('click', function(){ var show = input.type === 'password'; input.type = show ? 'text' : 'password'; btn.textContent = show ? '🙈' : '👁️'; btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); }); }
@@ -1995,7 +2010,7 @@ button{font:inherit;cursor:pointer}
       if(has){
         var wait = lockLeft(); if(wait){ err.textContent = 'Too many tries. Wait ' + wait + ' seconds.'; return; }
         if(!v){ err.textContent = 'Enter your password.'; return; }
-        if(v === state.keys[p.id].pw){ signIn(p.id, v); closeWho(); }
+        if(v === state.keys[p.id].pw){ signIn(p.id, v, true); closeWho(); }
         else { noteFail(); err.textContent = 'That password isn’t right. Ask Yasser if you’ve forgotten it.'; pw.select(); }
       } else {
         var v2 = b.querySelector('#lgPw2').value;
@@ -2003,7 +2018,7 @@ button{font:inherit;cursor:pointer}
         if(v !== v2){ err.textContent = 'The two passwords don’t match.'; b.querySelector('#lgPw2').select(); return; }
         if(mode === 'readonly'){ err.textContent = 'This copy is read-only, so a password can’t be saved here.'; return; }
         change({ type: 'pwset', pid: p.id, pw: v, at: Date.now() });
-        signIn(p.id, v); closeWho();
+        signIn(p.id, v, true); closeWho();
       }
     });
   }
