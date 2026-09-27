@@ -1,10 +1,16 @@
 # Roadmap
 
 ## Shipped
-- **Quick switch between the Command Centre and the team board** (27 Sep 2026). The Command Centre header now has a
-  "My to-do list ↗" button that opens the team board in a new tab, and the team board header shows a matching
-  "Command Centre ↗" button — but only for Yasser, since the Command Centre is private to him and would just deny
-  everyone else. Both open in a new tab, so neither page loses its place.
+- **Quick switch between the Command Centre and the team board** (27 Sep 2026). The Command Centre header has a
+  "My to-do list ↗" button that jumps to the team board, and the team board header shows a matching
+  "Command Centre ↗" button — for Yasser and Pieter, since Command Centre is currently only theirs (everyone else
+  just uses the task page for now). Both buttons reuse the same browser tab if one is already open, instead of
+  opening a new tab every time, and both are now filled in solid brand red so they're easy to spot at a glance.
+- **Command Centre: groundwork for Pieter sharing it with Yasser** (27 Sep 2026). Behind the scenes, Command Centre
+  now knows there can be more than one person opening it — the team board's "Command Centre" button passes along
+  who clicked it. Nothing changes yet for what either of them sees; this is just the plumbing so Pieter's own
+  version can be switched on once his email/WhatsApp/Telegram sync is set up (he uses Mac Mail, not Outlook, so
+  that'll need its own connection, not the one Yasser uses).
 - **Team board: peer reminders with a sound alarm and the task turning red** (27 Sep 2026). On any task that isn't
   your own, a new "⏰ Remind" button lets you set a reminder for whoever owns it — a quick pick (15 min, 1 hour,
   3 hours, tomorrow 9am) or a custom time. Until it's due, the task gets a dashed red edge on that person's board;

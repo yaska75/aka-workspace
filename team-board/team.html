@@ -32,6 +32,8 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 "Instru
 @media (max-width:520px){.logo{width:92px}.brand{gap:12px}.brand .sub{padding-left:12px}}
 .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 10px;color:var(--muted);font-size:14px}
+.pill.nav{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.pill.nav:hover{opacity:.88}
 .pill:hover{color:var(--ink);border-color:var(--accent)}
 .pill b{color:var(--ink);font-weight:600}
 select.skinpick{appearance:none;-webkit-appearance:none;cursor:pointer;font-family:inherit;padding-right:26px;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%235E5E66" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>');background-repeat:no-repeat;background-position:right 9px center}
@@ -502,7 +504,7 @@ button{font:inherit;cursor:pointer}
       '<div class="topline"><div class="brand"><span class="logo" role="img" aria-label="a.k.a. Media"></span><div class="sub"><b>Team board</b><span>All offices</span></div></div>' +
         '<div class="tools">' +
           '<span class="pill myclock" id="myClock" aria-live="off"></span>' +
-          '<a class="pill" id="ccBtn" href="https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ" target="_blank" rel="noopener noreferrer" hidden style="text-decoration:none">Command Centre ↗</a>' +
+          '<a class="pill nav" id="ccBtn" href="https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ" target="aka-command-centre" rel="noopener noreferrer" hidden style="text-decoration:none">Command Centre ↗</a>' +
           '<button class="pill" id="meBtn" type="button"></button>' +
           '<button class="pill" id="chatBtn" type="button" hidden>Chat<span class="badge" id="chatBadge" hidden></span></button>' +
           '<button class="pill" id="sendBtn" type="button" hidden>Send a task</button>' +
@@ -708,7 +710,11 @@ button{font:inherit;cursor:pointer}
     if(m){ btn.append('You: '); var b = document.createElement('b'); b.textContent = m.name; btn.append(b); btn.title = 'Not you? Switch'; }
     else btn.textContent = 'Choose who you are';
     $('teamBtn').hidden = !canManageTeam();
-    $('ccBtn').hidden = !m || m.role !== 'superuser';
+    // Command Centre exists only for Yasser and Pieter so far (more people get one later) —
+    // everyone else just uses this task page, same as today.
+    var ccPeople = { yasser: 1, pieter: 1 };
+    $('ccBtn').hidden = !m || !ccPeople[m.id];
+    if(m && ccPeople[m.id]) $('ccBtn').href = 'https://claude.ai/artifact/Qa1bpKvs9DmNekwfiT2TtZ?person=' + encodeURIComponent(m.id);
     $('sendBtn').hidden = mode === 'readonly' || !m || !addablePeople().length;
     $('chatBtn').hidden = !m;
     $('notifBtn').hidden = !m;
