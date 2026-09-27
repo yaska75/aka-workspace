@@ -43,10 +43,16 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 "Instru
 .clock{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:1px 8px 1px 6px;border-radius:999px;background:var(--soft);color:var(--ink);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .clock svg{flex:none}
 .clock .sun{color:#E8A317}.clock .moon{color:#B9B4F5}
+.clock.dubai{background:none;border:1px solid var(--line);color:var(--muted);font-weight:500}
 .where-edit{flex-wrap:wrap}
 .where-edit select{font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 7px;max-width:240px}
 .where-edit .tzq{flex-basis:100%;margin:0;font-size:13px;color:var(--muted)}
-.hero{display:flex;align-items:center;gap:16px}
+.hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.presence{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.presence::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.presence.on{color:var(--ok,#1E8A4C);background:color-mix(in srgb,var(--ok,#1E8A4C) 14%,transparent)}
+.presence.on::before{background:var(--ok,#1E8A4C);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok,#1E8A4C) 25%,transparent)}
+.presence.off::before{background:var(--muted)}
 .photo{width:80px;height:80px;border-radius:50%;object-fit:cover;flex:none;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--c)}
 .initials{display:grid;place-items:center;background:var(--c);color:var(--c-ink);font-family:"Outfit","Instrument Sans",system-ui,sans-serif;font-weight:700;font-size:30px;letter-spacing:-.02em}
 .hero-text{min-width:0}
@@ -89,6 +95,15 @@ button{font:inherit;cursor:pointer}
 .text{font-size:17px;line-height:1.45;overflow-wrap:anywhere;cursor:text;background:linear-gradient(var(--strike),var(--strike)) no-repeat 0 60%/0% 2.5px;transition:background-size .45s ease,color .3s;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .done .text{background-size:100% 2.5px;color:var(--muted)}
 .due{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+.prog{display:flex;align-items:center;gap:8px;margin-top:8px}
+.bar-track{position:relative;flex:1;height:6px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar-fill{position:absolute;left:0;top:0;height:100%;background:var(--c,var(--accent));border-radius:999px;transition:width .15s}
+.prog input[type=range]{flex:1;max-width:120px;height:16px;accent-color:var(--c,var(--accent));margin:0}
+.prog .pct{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;width:34px;text-align:right;flex:none}
+.tasknote{margin:6px 0 0;font-size:13px;color:var(--muted);font-style:italic;overflow-wrap:anywhere;white-space:pre-wrap}
+.noteedit{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.noteedit textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--c,var(--accent));border-radius:9px;padding:7px 9px;resize:vertical;min-height:44px}
+.noteedit .row{display:flex;gap:10px}
 .overdue .due{color:var(--strike);font-weight:600}
 .from{color:var(--muted);font-weight:400}
 .actions{display:flex;flex-wrap:wrap;gap:2px;margin:4px 0 0 -7px;opacity:.55;transition:opacity .15s}
@@ -213,12 +228,13 @@ button{font:inherit;cursor:pointer}
 .toast.rr{background:var(--surface);color:var(--ink);border:1px solid var(--accent)}
 @keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
 .nomsg{margin:auto;color:var(--muted);text-align:center;padding:30px 10px}
-.composer{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.composer{display:grid;grid-template-columns:auto auto 1fr auto;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
 .composer textarea{font:inherit;color:var(--ink);border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:9px 11px;resize:none;min-height:42px;max-height:140px}
 .composer textarea:focus{border-color:var(--accent);outline:none}
 .composer .primary{--c:var(--accent);align-self:end}
 .composer .clip{align-self:end;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:12px;padding:0}
 .composer .clip:hover,.composer .clip[aria-expanded=true]{color:var(--accent);border-color:var(--accent)}
+.composer .urgent[aria-pressed=true]{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
 .cattach{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px dashed var(--accent);border-radius:12px;background:var(--paper)}
 .cattach input{font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 9px;min-width:0}
 .cattach .url{grid-column:1/-1}
@@ -251,7 +267,7 @@ button{font:inherit;cursor:pointer}
 .status{min-height:1.5em;font-size:13px;color:var(--muted);margin-top:18px;text-align:center}
 .banner{margin:0 0 22px;padding:14px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--strike);border-left:5px solid var(--strike);color:var(--ink)}
 .banner b{display:block;margin-bottom:2px}
-.overlay{position:fixed;inset:0;background:rgba(10,20,28,.55);display:grid;place-items:center;padding:16px;z-index:40}
+.overlay{position:fixed;inset:0;background:rgba(10,20,28,.55);display:grid;place-items:center;padding:16px;z-index:55}
 .overlay[hidden]{display:none}
 .overlay.lock{background:var(--paper);z-index:60}
 .overlay.lock .sheet{width:min(560px,100%);box-shadow:0 30px 80px rgba(0,0,0,.18)}
@@ -491,7 +507,7 @@ button{font:inherit;cursor:pointer}
         '<div class="chans" id="chans" role="tablist" aria-label="Channels"></div>' +
         '<p class="chat-note" id="chatNote"></p><div class="callpick" id="callPick" hidden></div></div>' +
       '<div class="msgs" id="msgs" aria-live="polite"></div>' +
-      '<form class="composer" id="composer"><div class="pending" id="pendingFiles" hidden></div><div class="cattach" id="cAttach" hidden></div><button class="clip" type="button" id="clipBtn" aria-label="Share a file" aria-expanded="false" title="Share a file from Google Drive"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5l-8.2 8.2a5.3 5.3 0 01-7.5-7.5l8.6-8.6a3.5 3.5 0 015 5l-8.6 8.6a1.8 1.8 0 01-2.5-2.5l7.9-7.9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button><textarea id="chatText" rows="1" placeholder="Write a message" aria-label="Message"></textarea><button class="primary" type="submit">Send</button></form>' +
+      '<form class="composer" id="composer"><div class="pending" id="pendingFiles" hidden></div><div class="cattach" id="cAttach" hidden></div><button class="clip" type="button" id="clipBtn" aria-label="Share a file" aria-expanded="false" title="Share a file from Google Drive"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5l-8.2 8.2a5.3 5.3 0 01-7.5-7.5l8.6-8.6a3.5 3.5 0 015 5l-8.6 8.6a1.8 1.8 0 01-2.5-2.5l7.9-7.9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="clip urgent" type="button" id="urgentBtn" aria-pressed="false" aria-label="Mark this message urgent, so it rings an alarm for the other person" title="Mark urgent: rings an alarm for the other person until they answer">🔔</button><textarea id="chatText" rows="1" placeholder="Write a message" aria-label="Message"></textarea><button class="primary" type="submit">Send</button></form>' +
     '</aside>';
 
   // ---------- helpers ----------
@@ -529,7 +545,7 @@ button{font:inherit;cursor:pointer}
   function signature(){ return visiblePeople().map(function(p){ return [p.id, p.name, p.role, p.team, p.color, (p.photo || '').length].join('|'); }).join('/') + '#' + (myId() || ''); }
 
   function buildColumns(){
-    var sig = signature(); if(sig === colSig) return; colSig = sig;
+    var sig = signature(); if(sig === colSig){ paintPresence(); return; } colSig = sig;
     var cols = $('cols'); cols.textContent = '';
     var mine = myId();
     var shown = visiblePeople();
@@ -540,7 +556,8 @@ button{font:inherit;cursor:pointer}
       sec.id = 'col-' + p.id; sec.setAttribute('aria-label', p.name + '’s list');
       sec.innerHTML =
         '<div class="hero">' + avatarHtml(p) +
-          '<div class="hero-text"><h2></h2><div class="whereBox"></div><span class="team-tag"></span></div></div>' +
+          '<div class="hero-text"><h2></h2><div class="whereBox"></div><span class="team-tag"></span></div>' +
+          '<span class="presence off" aria-label="' + p.name + '’s status">Asleep</span></div>' +
         '<p class="tally"></p>' +
         '<div class="add">' +
           '<input type="text" class="newText" autocomplete="off">' +
@@ -567,13 +584,14 @@ button{font:inherit;cursor:pointer}
       wireColumn(p.id, sec);
     });
     Object.keys(ui).forEach(function(id){ if(!person(id)) delete ui[id]; });
+    paintPresence();
   }
 
   function wireColumn(pid, col){
     var old = ui[pid] || {};
     var u = ui[pid] = {
       filter: old.filter || ss.get('todo-filter-' + pid) || 'all',
-      editingId: null, armedDelete: null, armTimer: null, editingWhere: false,
+      editingId: null, armedDelete: null, armTimer: null, editingWhere: false, noteId: null,
       col: col, list: col.querySelector('.list'),
       newText: col.querySelector('.newText'), newDue: col.querySelector('.newDue')
     };
@@ -613,7 +631,7 @@ button{font:inherit;cursor:pointer}
     visiblePeople().forEach(function(p){ renderCol(p.id); });
     renderTop();
     if(teamOpen) renderTeam();
-    if(chatOpen) renderChat();
+    if(chatOpen && me()) renderChat();
   }
 
   function renderTop(){
@@ -688,12 +706,23 @@ button{font:inherit;cursor:pointer}
     u.col.classList.toggle('is-night', night === true);
     u.col.classList.toggle('is-day', night === false);
     var el = u.col.querySelector('.clock'); if(!el) return;
-    if(!tz){ el.hidden = true; return; }
+    var dbx = u.col.querySelector('.clock.dubai');
+    if(!tz){ el.hidden = true; if(dbx) dbx.hidden = true; return; }
     var parts = localParts(tz, d), mine = localParts(Intl.DateTimeFormat().resolvedOptions().timeZone, d);
     el.hidden = false;
     el.innerHTML = (night ? MOON : SUN) + '<span></span>';
     el.querySelector('span').textContent = parts.hour + ':' + parts.minute + (parts.weekday !== mine.weekday ? ' ' + parts.weekday : '');
     el.title = 'Local time in ' + p.location + (night ? ' (night)' : ' (day)');
+    if(dbx){
+      if(tz === 'Asia/Dubai'){ dbx.hidden = true; }
+      else {
+        var dParts = localParts('Asia/Dubai', d), dNight = sunAltitude(25.20, 55.27, d) < -0.833;
+        dbx.hidden = false;
+        dbx.innerHTML = (dNight ? MOON : SUN) + '<span></span>';
+        dbx.querySelector('span').textContent = 'Dubai ' + dParts.hour + ':' + dParts.minute;
+        dbx.title = 'Current time in Dubai, for comparison to ' + p.location;
+      }
+    }
   }
   function applyClocks(){ state.people.forEach(function(p){ applyClock(p.id); }); }
   setInterval(applyClocks, 30000);
@@ -748,6 +777,7 @@ button{font:inherit;cursor:pointer}
     var b = document.createElement('b'); b.textContent = place;
     btn.append('Currently in ', b);
     var clk = document.createElement('span'); clk.className = 'clock'; clk.hidden = true; btn.appendChild(clk);
+    var dbx = document.createElement('span'); dbx.className = 'clock dubai'; dbx.hidden = true; btn.appendChild(dbx);
     btn.title = 'Click to change';
     btn.addEventListener('click', function(){ if(mode !== 'readonly'){ u.editingWhere = true; renderWhere(pid); } });
     box.appendChild(btn);
@@ -838,6 +868,37 @@ button{font:inherit;cursor:pointer}
       });
       body.appendChild(fl);
     }
+    if(!t.done || t.progress){
+      var prog = document.createElement('div'); prog.className = 'prog';
+      var track = document.createElement('div'); track.className = 'bar-track';
+      var fill = document.createElement('div'); fill.className = 'bar-fill'; fill.style.width = (t.progress || 0) + '%';
+      track.appendChild(fill);
+      var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = (t.progress || 0) + '%';
+      prog.append(track, pct);
+      if(mode !== 'readonly'){
+        var range = document.createElement('input'); range.type = 'range'; range.min = '0'; range.max = '100'; range.step = '5';
+        range.value = String(t.progress || 0); range.setAttribute('aria-label', 'Progress on: ' + t.text);
+        range.addEventListener('input', function(){ pct.textContent = range.value + '%'; fill.style.width = range.value + '%'; });
+        range.addEventListener('change', function(){ change({ type: 'set', pid: pid, id: t.id, fields: { progress: +range.value } }); });
+        prog.insertBefore(range, pct);
+      }
+      body.appendChild(prog);
+    }
+    if(u.noteId === t.id){
+      var nwrap = document.createElement('div'); nwrap.className = 'noteedit';
+      var nta = document.createElement('textarea'); nta.value = t.note || ''; nta.rows = 2; nta.placeholder = 'Add a short note…';
+      nta.setAttribute('aria-label', 'Note for: ' + t.text);
+      var nrow = document.createElement('div'); nrow.className = 'row';
+      var nsave = document.createElement('button'); nsave.type = 'button'; nsave.className = 'primary'; nsave.textContent = 'Save note';
+      nsave.addEventListener('click', function(){ change({ type: 'set', pid: pid, id: t.id, fields: { note: nta.value.trim().slice(0, 500) } }); u.noteId = null; renderCol(pid); });
+      var ncancel = document.createElement('button'); ncancel.type = 'button'; ncancel.className = 'link'; ncancel.textContent = 'Cancel';
+      ncancel.addEventListener('click', function(){ u.noteId = null; renderCol(pid); });
+      nrow.append(nsave, ncancel); nwrap.append(nta, nrow); body.appendChild(nwrap);
+      setTimeout(function(){ nta.focus(); }, 0);
+    } else if(t.note){
+      var noteP = document.createElement('p'); noteP.className = 'tasknote'; noteP.textContent = t.note;
+      body.appendChild(noteP);
+    }
     if(u.attachId === t.id) body.appendChild(renderAttach(pid, t));
 
     var actions = document.createElement('div'); actions.className = 'actions';
@@ -846,13 +907,20 @@ button{font:inherit;cursor:pointer}
     att.textContent = 'Attach'; att.setAttribute('aria-label', 'Attach a file link to: ' + t.text);
     att.addEventListener('click', function(){ if(mode === 'readonly') return; u.attachId = u.attachId === t.id ? null : t.id; renderCol(pid); });
     actions.appendChild(att);
+    if(mode !== 'readonly'){
+      var noteBtn = document.createElement('button'); noteBtn.className = 'icon'; noteBtn.type = 'button';
+      noteBtn.textContent = t.note ? 'Edit note' : 'Add note';
+      noteBtn.setAttribute('aria-label', (t.note ? 'Edit note for: ' : 'Add note to: ') + t.text);
+      noteBtn.addEventListener('click', function(){ u.noteId = u.noteId === t.id ? null : t.id; renderCol(pid); });
+      actions.appendChild(noteBtn);
+    }
     var edit = document.createElement('button'); edit.className = 'icon'; edit.type = 'button';
     edit.textContent = 'Edit'; edit.setAttribute('aria-label', 'Edit: ' + t.text);
     edit.addEventListener('click', function(){ startEdit(pid, t.id); });
     var armed = u.armedDelete === t.id;
     var del = document.createElement('button'); del.className = 'icon del' + (armed ? ' arm' : ''); del.type = 'button';
-    del.textContent = armed ? 'Delete?' : 'Delete';
-    del.setAttribute('aria-label', armed ? 'Confirm delete: ' + t.text : 'Delete: ' + t.text);
+    del.textContent = armed ? 'Remove?' : 'Remove from list';
+    del.setAttribute('aria-label', armed ? 'Confirm remove from list: ' + t.text : 'Remove from list: ' + t.text);
     del.addEventListener('click', function(){ removeTask(pid, t.id); });
     if(!t.done && mode !== 'readonly'){
       var openList = sorted(pid).filter(function(x){ return !x.done; });
@@ -1003,7 +1071,9 @@ button{font:inherit;cursor:pointer}
     { id: 'post', name: 'Post' },
     { id: 'finance', name: 'Finance' }
   ];
-  var chatOpen = ss.get('chat-open') === '1', chatChan = ss.get('chat-chan') || 'all';
+  var chatPref = ss.get('chat-open');
+  var chatOpen = chatPref === '1' || (chatPref === null && window.matchMedia && window.matchMedia('(min-width:1000px)').matches);
+  var chatChan = ss.get('chat-chan') || 'all';
   function dmId(a, b){ return 'dm:' + [a, b].sort().join('|'); }
   function dmPeer(ch, v){ if(!/^dm:/.test(ch)) return null; var ids = ch.slice(3).split('|'); var o = ids[0] === v.id ? ids[1] : ids[0]; return person(o); }
   function canSeeChannel(v, ch){
@@ -1148,7 +1218,7 @@ button{font:inherit;cursor:pointer}
     });
   }
   function openChat(){ if(!me()) return; chatOpen = true; ss.set('chat-open', '1'); $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
-  function closeChat(){ chatOpen = false; ss.del('chat-open'); $('chatPanel').hidden = true; document.body.classList.remove('chat-on'); renderTop(); }
+  function closeChat(){ chatOpen = false; ss.set('chat-open', '0'); $('chatPanel').hidden = true; document.body.classList.remove('chat-on'); renderTop(); }
   function renderChat(focus){
     var v = me(); if(!v){ closeChat(); return; }
     var chans = channelsFor(v);
@@ -1479,8 +1549,38 @@ button{font:inherit;cursor:pointer}
         if(d.ack){ return; }
         if(d.alert && d.by) raiseAlarm(d.alert, String(d.by), d.ch ? String(d.ch) : null, +d.at || Date.now());
       }, function(){ roomNs = null; });
+      r.on('presence', function(msg){
+        var d = msg && msg.data; if(!d || msg.sameTab || !d.pid) return;
+        presence[String(d.pid)] = { online: !!d.online, at: +d.at || Date.now() };
+        paintPresence();
+      }, function(){});
+      broadcastPresence();
     }, function(){});
   }
+  // ---- presence: online while this tab is visible, asleep otherwise
+  var presence = {};
+  var PRESENCE_STALE = 50000;
+  function broadcastPresence(){
+    var v = me(); if(!v || !roomNs) return;
+    presence[v.id] = { online: !document.hidden, at: Date.now() };
+    try { roomNs.emit('presence', { pid: v.id, online: !document.hidden, at: Date.now() }).catch(function(){}); } catch(e){}
+  }
+  function paintPresence(){
+    state.people.forEach(function(p){
+      var el = document.querySelector('#col-' + p.id + ' .presence'); if(!el) return;
+      var online = false;
+      if(p.id === myId()) online = !document.hidden;
+      else { var pr = presence[p.id]; online = !!(pr && pr.online && (Date.now() - pr.at < PRESENCE_STALE)); }
+      el.textContent = online ? 'Online' : 'Asleep';
+      el.className = 'presence ' + (online ? 'on' : 'off');
+    });
+  }
+  document.addEventListener('visibilitychange', function(){ broadcastPresence(); paintPresence(); });
+  window.addEventListener('pagehide', function(){
+    var v = me(); if(!v || !roomNs) return;
+    try { roomNs.emit('presence', { pid: v.id, online: false, at: Date.now() }).catch(function(){}); } catch(e){}
+  });
+  setInterval(function(){ broadcastPresence(); paintPresence(); }, 20000);
   function callCard(m, mine){
     var c = m.call || {}, box = document.createElement('div'); box.className = 'callcard';
     var ci = document.createElement('span'); ci.className = 'ci'; ci.innerHTML = c.kind === 'voice' ? PHONE_SVG : VIDEO_SVG;
@@ -1524,20 +1624,31 @@ button{font:inherit;cursor:pointer}
   }
   function msgPreview(m){ if(m.alert) return 'Attention alert' + (m.alert.note ? ': ' + m.alert.note : ''); if(m.call) return m.call.kind === 'voice' ? 'Started a voice call' : 'Started a video call'; return m.text || (m.files && m.files.length ? 'Shared ' + (m.files.length === 1 ? 'a file: ' + m.files[0].name : m.files.length + ' files') : ''); }
 
+  function channelRecipients(ch){
+    var v = me(); if(!v) return [];
+    if(/^dm:/.test(ch)){ var p = dmPeer(ch, v); return p ? [p.id] : []; }
+    return state.people.filter(function(p){ return p.id !== v.id && canSeeChannel(p, ch); }).map(function(p){ return p.id; });
+  }
   function sendChat(){
     var v = me(), ta = $('chatText'), text = ta.value.trim();
     if(!v || (!text && !pendingFiles.length) || mode === 'readonly' || !canSeeChannel(v, chatChan)) return;
     var msg = { id: uid('m'), by: v.id, text: text.slice(0, 4000), at: Date.now() };
     if(pendingFiles.length) msg.files = pendingFiles.slice(0, 6);
+    var urgentBtn = $('urgentBtn'), urgent = urgentBtn && urgentBtn.getAttribute('aria-pressed') === 'true';
+    var toIds = urgent ? channelRecipients(chatChan) : [];
+    if(urgent && toIds.length) msg.alert = { id: uid('al'), to: toIds, note: (text || 'New message').slice(0, 140) };
     change({ type: 'msg', ch: chatChan, m: msg });
     pendingFiles = []; savePending(); renderPending(); closeCAttach();
     try { whoosh(); } catch(e){}
     ls.set(heardKey(), String(Date.now()));
+    if(urgent && toIds.length && roomNs){ try { roomNs.emit('alert', { alert: msg.alert, by: v.id, at: msg.at, ch: chatChan }).catch(function(){}); } catch(e){} }
+    if(urgentBtn) urgentBtn.setAttribute('aria-pressed', 'false');
     ta.value = ''; ss.del('chat-draft'); ss.set('chat-refocus', '1');
     renderChat(); $('msgs').scrollTop = $('msgs').scrollHeight; ta.focus(); renderTop();
   }
   $('chatBtn').addEventListener('click', function(){ chatOpen ? closeChat() : openChat(); });
   $('chatClose').addEventListener('click', closeChat);
+  $('urgentBtn').addEventListener('click', function(){ var on = $('urgentBtn').getAttribute('aria-pressed') === 'true'; $('urgentBtn').setAttribute('aria-pressed', on ? 'false' : 'true'); });
   $('composer').addEventListener('submit', function(e){ e.preventDefault(); sendChat(); });
   $('chatText').addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
   $('chatText').addEventListener('input', function(){ ss.set('chat-draft', $('chatText').value); var t = $('chatText'); t.style.height = 'auto'; t.style.height = Math.min(140, t.scrollHeight) + 'px'; });
@@ -1596,7 +1707,7 @@ button{font:inherit;cursor:pointer}
   var FAIL_KEY = 'team-todo-fails';
   function lockLeft(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } return f.until && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0; }
   function noteFail(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } f.n = (f.n || 0) + 1; if(f.n >= 5){ f.until = Date.now() + 30000; f.n = 0; } ls.set(FAIL_KEY, JSON.stringify(f)); }
-  function signIn(pid, pw){ ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); }
+  function signIn(pid, pw){ ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0); }
   function signOut(){ ls.del(AUTH_KEY); ls.del(ME_KEY); openWho(); render(); }
   function whoSheet(html){ var b = $('whoBody'); b.innerHTML = html; return b; }
   function pwToggle(input, btn){ btn.addEventListener('click', function(){ var show = input.type === 'password'; input.type = show ? 'text' : 'password'; btn.textContent = show ? '🙈' : '👁️'; btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); }); }
@@ -1686,6 +1797,7 @@ button{font:inherit;cursor:pointer}
     if(!me()) return;
     whoOpen = false; $('whoOverlay').hidden = true; $('whoOverlay').classList.remove('lock'); document.body.classList.remove('signed-out');
     colSig = ''; render(); if(pendingSave) scheduleSave();
+    if(chatOpen && $('chatPanel').hidden) openChat();
   }
   function guardAuth(){ if(!me() && !whoOpen) openWho(); }
   $('meBtn').addEventListener('click', openWho);

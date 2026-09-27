@@ -7,7 +7,20 @@
   live in their own place in the database, separate from the cards the scheduled syncs overwrite, so they survive every
   hourly refresh. Honest limit: a reminder only rings while this page is open in a browser tab — it cannot wake your phone
   or fire while the tab is closed. The page footer also shows two big clocks side by side: your browser's local time and
-  Dubai time, so you always know both at a glance while travelling.
+  Dubai time, so you always know both at a glance while travelling. You can also set your location manually (pencil/edit
+  next to the clock) if the browser guesses it wrong — pick a known city or, for anywhere else, type a name and choose
+  its time zone from a list. The choice is remembered on this device.
+- **Team board: communications panel, task progress/notes, remove, and Dubai clocks** (27 Sep 2026). On a wide screen the
+  team chat now opens as a docked panel on the right by default as soon as you sign in, instead of needing a click —
+  close it any time and it stays closed until you reopen it. Each task can carry a progress bar (drag the slider) and a
+  short note, visible to everyone who can see that list. Each task's "Remove from list" button takes it off the list for
+  good (tap once to arm it, again to confirm). Each person's "Currently in…" location badge now also shows Dubai's
+  current time side by side, so it is easy to compare anyone's time to Dubai's — set your own location manually the same
+  way as before (click "Currently in…", type a city or pick a time zone).
+- **Team board: online/asleep status and urgent chat alerts** (27 Sep 2026). Each person's column shows Online (their
+  tab is active) or Asleep (it isn't) to the rest of the team. The chat composer has an urgent (🔔) toggle: send with it
+  on and the recipients get the same full-screen, sound-and-flash alarm as the existing Alert button, until they
+  acknowledge it.
 - **Team board sign-in** (27 Sep 2026). Everyone picks their name and sets a password on first sign-in.
   Passwords are stored in plain text in the page, on purpose: Yasser (superuser) can see and change everyone's
   password from the Team panel, and admins can see and change passwords for members (not for other admins or Yasser).
