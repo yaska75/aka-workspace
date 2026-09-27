@@ -1,6 +1,10 @@
 # Roadmap
 
 ## Shipped
+- **Command Centre: theme picker (Classic, Sunset, Ocean, Neon)** (27 Sep 2026). A dropdown next to the Gmail and
+  Microsoft 365 status pills lets you pick a skin for this device, matching the team board's four themes: Classic
+  (the usual a.k.a. red, auto light/dark), Sunset (warm sand and terracotta, serif headings), Ocean (cool
+  blue-teal), or Neon (near-black with violet/cyan, futuristic headings). The choice is remembered per device.
 - **Team board: theme picker (Classic, Sunset, Ocean, Neon)** (27 Sep 2026). A new dropdown next to the sound and
   notification buttons lets each person pick a skin for their own device: Classic (the usual a.k.a. red, auto
   light/dark), Sunset (warm sand and terracotta, serif headings), Ocean (cool blue-teal), or Neon (near-black with
