@@ -11,7 +11,9 @@ const { chromium } = require('playwright'); const fs=require('fs');
    const snap=()=>({docs:Object.keys(cards).map(k=>({id:k,data:()=>cards[k]}))});
    const db={collection:(n)=>({onSnapshot:(cb)=>{ if(n==='cards'){listeners.push(cb); setTimeout(()=>cb(snap()),10);} return ()=>{}; }, doc:(id)=>({set:(d)=>{cards[id]=d; listeners.forEach(l=>l(snap())); return Promise.resolve();}, delete:()=>{delete cards[id]; return Promise.resolve();}, get:()=>Promise.resolve({exists:false})}), add:(d)=>{window.__actions.push(d); return Promise.resolve({});}}), doc:(p)=>({get:()=>Promise.resolve({exists:true,data:()=>({lastBrief:new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Dubai'})})}), set:()=>Promise.resolve()})};
    const mcp={callTool:()=>Promise.resolve({payload:{}}), watchTool:()=>()=>{}, invalidate:()=>Promise.resolve()};
-   window.claude={use:(n)=>Promise.resolve(n==='db'?db:n==='mcp'?mcp:null)};
+   window.__uploaded=[];
+   const assets={upload:(blob,opts)=>{ window.__uploaded.push({size:blob.size,type:opts&&opts.type}); return Promise.resolve({id:'asset-'+window.__uploaded.length,url:'/_blob/asset-'+window.__uploaded.length,sizeBytes:blob.size,contentType:'application/pdf'}); }, list:()=>Promise.resolve({assets:[],usage:{}}), delete:()=>Promise.resolve({deleted:true})};
+   window.claude={use:(n)=>Promise.resolve(n==='db'?db:n==='mcp'?mcp:n==='assets'?assets:null)};
    window.__pushCard=(c)=>{ cards[c.key]=c; listeners.forEach(l=>l(snap())); };
  });
  await p.goto('https://cc.test/'); await p.waitForTimeout(500);
@@ -35,6 +37,13 @@ const { chromium } = require('playwright'); const fs=require('fs');
  await p.click('#mkQuoteGo'); await p.waitForTimeout(150);
  console.log('queued (file link only)', JSON.stringify(await p.evaluate(()=>window.__actions)));
  console.log('file link cleared', await p.inputValue('#mkQuoteFileLink') === '');
+ // attaching a PDF should upload it via the assets capability and queue with an assetId, no Drive link needed
+ await p.setInputFiles('#mkQuoteFile', {name:'brief.pdf', mimeType:'application/pdf', buffer:Buffer.from('%PDF-1.4 fake brief')});
+ await p.waitForTimeout(150);
+ console.log('attach note', await p.textContent('#mkQuoteFileNote'), 'uploaded', JSON.stringify(await p.evaluate(()=>window.__uploaded)));
+ await p.click('#mkQuoteGo'); await p.waitForTimeout(150);
+ console.log('queued (attached pdf)', JSON.stringify(await p.evaluate(()=>window.__actions)));
+ console.log('attach note cleared after queue', await p.textContent('#mkQuoteFileNote') === '');
  // simulate the scheduled task coming back with a card
  await p.evaluate(()=>window.__pushCard({key:'make-quote-1', title:'Quote: Rakan', source:'make', summary:'Built from your standard template.', items:[{title:'AKA Quote - Rakan', url:'https://docs.google.com/spreadsheets/d/xyz/edit', linkLabel:'Open the quote ↗', priority:'med'}], pulledAt:new Date().toISOString()}));
  await p.waitForTimeout(150);

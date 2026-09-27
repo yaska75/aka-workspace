@@ -182,6 +182,7 @@ select.skinpick:hover{color:var(--ink);border-color:var(--red)}
 .seg button{border:0;background:none;padding:5px 12px;border-radius:8px;font-size:13px;color:var(--muted)}
 .seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);font-weight:600}
 .go.small{height:38px;padding:0 16px;border:0;border-radius:10px;background:var(--red);color:var(--red-ink);font-weight:600}
+.go.small.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
 .rwout{display:flex;flex-direction:column;gap:10px}
 .rwtext{white-space:pre-wrap;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;padding:12px 14px;font-size:15px;line-height:1.55}
 .qn{font-size:12px;color:var(--muted);align-self:center}
@@ -411,10 +412,14 @@ body.pop-on .fab{display:none}
     <div class="rw">
       <div class="rwb">
         <h3 style="margin:6px 0 0">Make a quote</h3>
-        <small class="mkhint">Paste the brief, or paste a Drive link to the brief file (PDF or PPT) — or both. Builds a budget from your standard quote template and posts the link back here — usually within a few minutes, not instantly.</small>
+        <small class="mkhint">Type the brief, attach the brief file, or both. Builds a budget from your standard quote template and posts the link back here — usually within a few minutes, not instantly.</small>
         <textarea id="mkQuoteBrief" rows="6" placeholder="Client, scope, locations, shoot days, crew, equipment, deliverables…" aria-label="Quote brief"></textarea>
-        <input type="text" id="mkQuoteFileLink" placeholder="Or paste a Google Drive link to the brief (PDF or PPT)" aria-label="Drive link to brief file">
-        <small class="mkhint" id="mkQuoteFileHint">Upload the file to Drive first, then paste its share link here — this can't read a file straight off your computer.</small>
+        <div class="rwrow">
+          <input type="file" id="mkQuoteFile" accept="application/pdf" style="display:none">
+          <button type="button" class="go small ghost" id="mkQuoteAttach">Attach a PDF</button>
+          <span class="steps" id="mkQuoteFileNote"></span>
+        </div>
+        <input type="text" id="mkQuoteFileLink" placeholder="PPT or anything else: paste a Google Drive link to it instead" aria-label="Drive link to brief file">
         <div class="rwrow"><button type="button" class="go small" id="mkQuoteGo">Make quote</button><span class="steps" id="mkQuoteNote"></span></div>
       </div>
     </div>
@@ -621,7 +626,7 @@ body.pop-on .fab{display:none}
   }
   function who(x){ if(!x) return ''; if(typeof x === 'string') return x; if(x.emailAddress) x = x.emailAddress; return x.name ? x.name + (x.address ? ' <' + x.address + '>' : '') : (x.address || ''); }
 
-  var mcp = null, sample = null, db = null;
+  var mcp = null, sample = null, db = null, assets = null;
   function m365(tool, input, signal){
     return mcp.callTool(M365, tool, input, signal ? { signal: signal } : undefined).then(function(r){ markM365(true); return r; }, function(e){ markM365(false, e); throw new Error(m365Copy(e)); });
   }
@@ -1068,17 +1073,20 @@ body.pop-on .fab{display:none}
     }).then(function(){ busy = null; steps.textContent = ''; setBusyUi(false); scroll(); if(!$('log').hidden) renderLog(); });
   }
   // ---- Make: queue a quote/deck job for the scheduled task to build (never built in-browser — needs Composio)
+  var mkAttachedAsset = null; // {id, name} of the last uploaded brief PDF, cleared once queued
   function queueMake(type, brief, fileLink, box, fileBox, btn, note){
     brief = String(brief || '').trim();
     fileLink = String(fileLink || '').trim();
-    if(!brief && !fileLink){ note.textContent = 'Paste a brief, or a Drive link to the brief file, first.'; return; }
+    var assetId = mkAttachedAsset && mkAttachedAsset.id;
+    if(!brief && !fileLink && !assetId){ note.textContent = 'Type a brief, attach a PDF, or paste a Drive link, first.'; return; }
     if(fileLink && !/^https:\/\/(drive|docs)\.google\.com\//.test(fileLink)){ note.textContent = 'That doesn’t look like a Google Drive link — upload the file to Drive and paste its share link.'; return; }
     if(!db || memOnly){ note.textContent = 'Needs the saved workspace — open this in claude.ai signed in.'; return; }
     btn.disabled = true; note.textContent = 'Queuing…';
-    var job = { type: type, brief: brief, fileLink: fileLink, status: 'pending', requestedAt: new Date().toISOString() };
+    var job = { type: type, brief: brief, fileLink: fileLink, assetId: assetId || '', status: 'pending', requestedAt: new Date().toISOString() };
     db.collection('actions').add(job).then(function(){
       note.textContent = 'Queued — check back in a few minutes, the link will appear below.';
       box.value = ''; if(fileBox) fileBox.value = ''; btn.disabled = false;
+      mkAttachedAsset = null; var fn = $('mkQuoteFileNote'); if(fn) fn.textContent = '';
     }, function(){ note.textContent = 'Could not queue that — try again.'; btn.disabled = false; });
   }
   // ---- send an email to Promotions (Gmail now, Outlook work inbox at the next desktop sync)
@@ -1273,6 +1281,21 @@ body.pop-on .fab{display:none}
   }
   $('rwGo').addEventListener('click', function(){ rwRun(''); });
   $('mkQuoteGo').addEventListener('click', function(){ queueMake('make-quote', $('mkQuoteBrief').value, $('mkQuoteFileLink').value, $('mkQuoteBrief'), $('mkQuoteFileLink'), $('mkQuoteGo'), $('mkQuoteNote')); });
+  $('mkQuoteAttach').addEventListener('click', function(){ $('mkQuoteFile').click(); });
+  $('mkQuoteFile').addEventListener('change', function(){
+    var f = this.files && this.files[0]; var fn = $('mkQuoteFileNote'); this.value = '';
+    if(!f) return;
+    if(!assets){ fn.textContent = 'Attaching isn’t available here — paste a Drive link below instead.'; return; }
+    if(f.type !== 'application/pdf'){ fn.textContent = 'Only PDF can be attached directly — for PPT, paste a Drive link below.'; return; }
+    fn.textContent = 'Uploading ' + f.name + '…';
+    assets.upload(f, { type: 'application/pdf' }).then(function(r){
+      mkAttachedAsset = { id: r.id, name: f.name };
+      fn.textContent = 'Attached: ' + f.name;
+    }, function(e){
+      var msg = (e && e.code === 'too_large') ? 'That file is too large to attach (20MB max) — paste a Drive link below instead.' : 'Couldn’t attach that file — paste a Drive link below instead.';
+      fn.textContent = msg;
+    });
+  });
   Array.prototype.forEach.call(document.querySelectorAll('[data-tweak]'), function(b){ b.addEventListener('click', function(){ rwRun(b.dataset.tweak); }); });
   $('rwCopy').addEventListener('click', function(){
     var t = $('rwText').textContent, b = $('rwCopy');
@@ -1336,6 +1359,7 @@ body.pop-on .fab{display:none}
     }, function(){ memOnly = true; loadLocalFlags(); ready.db = true; maybeAutoBrief(); });
     cl.use('mcp').then(function(m){ mcp = m; if(!m) markM365(false, { code: 'not_granted', message: 'Microsoft 365 is not available in this view.' }); ready.mcp = true; maybeAutoBrief(); }, function(){ ready.mcp = true; });
     cl.use('sample').then(function(s){ sample = s; ready.sample = true; maybeAutoBrief(); }, function(){ ready.sample = true; });
+    cl.use('assets').then(function(a){ assets = a; }, function(){});
   }
 })();
 
