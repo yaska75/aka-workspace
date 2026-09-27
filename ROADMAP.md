@@ -1,6 +1,10 @@
 # Roadmap
 
 ## Shipped
+- **Team board: theme picker (Classic, Sunset, Ocean, Neon)** (27 Sep 2026). A new dropdown next to the sound and
+  notification buttons lets each person pick a skin for their own device: Classic (the usual a.k.a. red, auto
+  light/dark), Sunset (warm sand and terracotta, serif headings), Ocean (cool blue-teal), or Neon (near-black with
+  violet/cyan, futuristic headings). The choice is remembered per device, same as the fold and sound settings.
 - **Team board: collapsed lists, your current time, and a deposit-folder hint for task results** (27 Sep 2026). On
   the task screen, everyone else's list now starts folded down to just their name and photo — click it (or the
   arrow) to open it up and add or see their tasks. Your own list still opens by default. Each person's fold choice
