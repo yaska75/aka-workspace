@@ -13,6 +13,12 @@
   Outlook. It fills in what the brief gives it and leaves anything it can't infer (like a rate the template doesn't
   have) blank rather than guessing. "Make a Presentation" (Google Slides) is a disabled placeholder for now — next,
   once this is proven out. Always check the numbers before sending a quote out.
+- **Command Centre: "Make a quote" from a PDF/PPT brief, not just pasted text** (27 Sep 2026). The widget can't take a
+  file straight off your computer or phone, so it now also has a "paste a Drive link" field: upload the brief PDF or
+  PowerPoint to Drive, paste its share link in alongside (or instead of) the typed brief, and the same scheduled task
+  opens it, pulls the text out, and builds the quote from that. If the link isn't a Drive link it's rejected before
+  queuing; if the file can't be read for some reason, the job still runs off whatever text you typed and the result
+  card says honestly that the file didn't come through.
 - **Command Centre: full LinkedIn messages, not just a summary** (27 Sep 2026). The LinkedIn sync now opens your top
   8 conversations and captures the other person's exact message, not just a one-line gloss. Each item with a full
   message gets a "Read full message" button that shows it in place; "Do it with Claude" on that item drafts a reply

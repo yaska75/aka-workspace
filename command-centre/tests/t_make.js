@@ -17,14 +17,24 @@ const { chromium } = require('playwright'); const fs=require('fs');
  await p.goto('https://cc.test/'); await p.waitForTimeout(500);
  await p.click('.dk[data-sec="make"]'); await p.waitForTimeout(200);
  console.log('empty state', await p.textContent('#se-make'));
- // clicking with no brief should not queue anything
+ // clicking with no brief and no file link should not queue anything
  await p.click('#mkQuoteGo'); await p.waitForTimeout(100);
  console.log('empty-brief note', await p.textContent('#mkQuoteNote'), 'actions', JSON.stringify(await p.evaluate(()=>window.__actions)));
+ // a non-Drive link should be rejected without queuing
+ await p.fill('#mkQuoteFileLink', 'https://example.com/brief.pdf');
+ await p.click('#mkQuoteGo'); await p.waitForTimeout(100);
+ console.log('bad-link note', await p.textContent('#mkQuoteNote'), 'actions', JSON.stringify(await p.evaluate(()=>window.__actions)));
+ await p.fill('#mkQuoteFileLink', '');
  // now with a real brief
  await p.fill('#mkQuoteBrief', 'Client: Rakan. 2-day shoot, Dubai, 6 crew, drone add-on.');
  await p.click('#mkQuoteGo'); await p.waitForTimeout(150);
  console.log('queued', JSON.stringify(await p.evaluate(()=>window.__actions)));
  console.log('note after queue', await p.textContent('#mkQuoteNote'), 'brief cleared', await p.inputValue('#mkQuoteBrief') === '');
+ // a brief-less job with just a Drive file link should also queue
+ await p.fill('#mkQuoteFileLink', 'https://drive.google.com/file/d/abc123/view');
+ await p.click('#mkQuoteGo'); await p.waitForTimeout(150);
+ console.log('queued (file link only)', JSON.stringify(await p.evaluate(()=>window.__actions)));
+ console.log('file link cleared', await p.inputValue('#mkQuoteFileLink') === '');
  // simulate the scheduled task coming back with a card
  await p.evaluate(()=>window.__pushCard({key:'make-quote-1', title:'Quote: Rakan', source:'make', summary:'Built from your standard template.', items:[{title:'AKA Quote - Rakan', url:'https://docs.google.com/spreadsheets/d/xyz/edit', linkLabel:'Open the quote ↗', priority:'med'}], pulledAt:new Date().toISOString()}));
  await p.waitForTimeout(150);

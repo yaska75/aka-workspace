@@ -411,8 +411,10 @@ body.pop-on .fab{display:none}
     <div class="rw">
       <div class="rwb">
         <h3 style="margin:6px 0 0">Make a quote</h3>
-        <small class="mkhint">Paste the brief. Builds a budget from your standard quote template and posts the link back here — usually within a few minutes, not instantly.</small>
+        <small class="mkhint">Paste the brief, or paste a Drive link to the brief file (PDF or PPT) — or both. Builds a budget from your standard quote template and posts the link back here — usually within a few minutes, not instantly.</small>
         <textarea id="mkQuoteBrief" rows="6" placeholder="Client, scope, locations, shoot days, crew, equipment, deliverables…" aria-label="Quote brief"></textarea>
+        <input type="text" id="mkQuoteFileLink" placeholder="Or paste a Google Drive link to the brief (PDF or PPT)" aria-label="Drive link to brief file">
+        <small class="mkhint" id="mkQuoteFileHint">Upload the file to Drive first, then paste its share link here — this can't read a file straight off your computer.</small>
         <div class="rwrow"><button type="button" class="go small" id="mkQuoteGo">Make quote</button><span class="steps" id="mkQuoteNote"></span></div>
       </div>
     </div>
@@ -1066,15 +1068,17 @@ body.pop-on .fab{display:none}
     }).then(function(){ busy = null; steps.textContent = ''; setBusyUi(false); scroll(); if(!$('log').hidden) renderLog(); });
   }
   // ---- Make: queue a quote/deck job for the scheduled task to build (never built in-browser — needs Composio)
-  function queueMake(type, brief, box, btn, note){
+  function queueMake(type, brief, fileLink, box, fileBox, btn, note){
     brief = String(brief || '').trim();
-    if(!brief){ note.textContent = 'Paste a brief first.'; return; }
+    fileLink = String(fileLink || '').trim();
+    if(!brief && !fileLink){ note.textContent = 'Paste a brief, or a Drive link to the brief file, first.'; return; }
+    if(fileLink && !/^https:\/\/(drive|docs)\.google\.com\//.test(fileLink)){ note.textContent = 'That doesn’t look like a Google Drive link — upload the file to Drive and paste its share link.'; return; }
     if(!db || memOnly){ note.textContent = 'Needs the saved workspace — open this in claude.ai signed in.'; return; }
     btn.disabled = true; note.textContent = 'Queuing…';
-    var job = { type: type, brief: brief, status: 'pending', requestedAt: new Date().toISOString() };
+    var job = { type: type, brief: brief, fileLink: fileLink, status: 'pending', requestedAt: new Date().toISOString() };
     db.collection('actions').add(job).then(function(){
       note.textContent = 'Queued — check back in a few minutes, the link will appear below.';
-      box.value = ''; btn.disabled = false;
+      box.value = ''; if(fileBox) fileBox.value = ''; btn.disabled = false;
     }, function(){ note.textContent = 'Could not queue that — try again.'; btn.disabled = false; });
   }
   // ---- send an email to Promotions (Gmail now, Outlook work inbox at the next desktop sync)
@@ -1268,7 +1272,7 @@ body.pop-on .fab{display:none}
     }).then(function(){ rwBusy = null; });
   }
   $('rwGo').addEventListener('click', function(){ rwRun(''); });
-  $('mkQuoteGo').addEventListener('click', function(){ queueMake('make-quote', $('mkQuoteBrief').value, $('mkQuoteBrief'), $('mkQuoteGo'), $('mkQuoteNote')); });
+  $('mkQuoteGo').addEventListener('click', function(){ queueMake('make-quote', $('mkQuoteBrief').value, $('mkQuoteFileLink').value, $('mkQuoteBrief'), $('mkQuoteFileLink'), $('mkQuoteGo'), $('mkQuoteNote')); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-tweak]'), function(b){ b.addEventListener('click', function(){ rwRun(b.dataset.tweak); }); });
   $('rwCopy').addEventListener('click', function(){
     var t = $('rwText').textContent, b = $('rwCopy');

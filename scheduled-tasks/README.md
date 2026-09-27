@@ -10,7 +10,7 @@ Every sync is read-only and never sends, replies, posts or deletes. The one exce
 | WhatsApp and Telegram to Command Centre | trig_017noWFvq6o5Ggv5Bs6ECmSg | :33, 8am–10pm | Mac (both apps) | `whatsapp-chats`, `telegram-chats` |
 | Team board to-do sync | trig_0116P6TkHNDnue1XJ5SDmJc9 | :05, 7am–11pm | Cloud | `todo-mine`, `team-chat` |
 | Posting reminder (LinkedIn + Instagram) | trig_01B3PQiYTp6DKu4NM7XKTNe4 | 9:51am daily, phone notification | Chrome on the Mac | `posting-rhythm` |
-| Make a Quote — build from queued brief | trig_01QGydvjFpMPDn6xv1kPeaEw | :12, 7am–11pm | Cloud (Composio, akamediadigital@gmail.com) | processes `actions` queue (`type: make-quote`), writes `make-quote-<job id>` |
+| Make a Quote — build from queued brief | trig_01QGydvjFpMPDn6xv1kPeaEw | :12, 7am–11pm | Cloud (Composio, akamediadigital@gmail.com) | processes `actions` queue (`type: make-quote`, brief text and/or a Drive `fileLink` to a PDF/PPT), writes `make-quote-<job id>` |
 
 This one isn't read-only by the table above's rule: it creates a new Google Sheet (a copy of the quote master template)
 and writes into it, but only ever under akamediadigital@gmail.com, never Yasser's own Google account, and never
