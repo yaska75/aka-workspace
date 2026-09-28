@@ -1,6 +1,11 @@
 # Roadmap
 
 ## Shipped
+- **Fix: "blocked" screen on signing in as Yasser/Pieter** (28 Sep 2026). The sign-in redirect to
+  Command Centre was briefly broken — right after entering your password you'd see a blank "This
+  content is blocked" page instead of Command Centre. It opens its own tab now (the same way the
+  header's "Command Centre ↗" button already did) instead of trying to load Command Centre inside
+  the team board's own page, which is what was causing the blocked screen.
 - **Team board sign-in now routes you straight to Command Centre (Yasser and Pieter only)** (27 Sep 2026). Signing
   in on the team board is the one login for everyone. Now, for Yasser and Pieter specifically, the moment you enter
   your password you're taken straight to Command Centre instead of landing on the task page and needing an extra
