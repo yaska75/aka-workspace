@@ -1949,19 +1949,37 @@ button{font:inherit;cursor:pointer}
   var FAIL_KEY = 'team-todo-fails';
   function lockLeft(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } return f.until && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0; }
   function noteFail(){ var f; try { f = JSON.parse(ls.get(FAIL_KEY) || '{}'); } catch(e){ f = {}; } f.n = (f.n || 0) + 1; if(f.n >= 5){ f.until = Date.now() + 30000; f.n = 0; } ls.set(FAIL_KEY, JSON.stringify(f)); }
+  // Command Centre's own links back here (the "My to-do list ↗" button etc.) add ?stay=1 so
+  // that following them doesn't just bounce Yasser/Pieter straight back to Command Centre.
+  function wantsToStay(){ try { return new URLSearchParams(location.search).get('stay') === '1'; } catch(e){ return false; } }
+  // location.hostname check excludes the Playwright test fixture (served from todo.test),
+  // which signs in as Yasser/Pieter to test unrelated things and must stay on this page.
+  function isTestFixture(){ return location.hostname === 'todo.test'; }
+  function goToCommandCentre(pid){ location.href = CC_URL + '?person=' + encodeURIComponent(pid); }
+  // Called at boot for someone already signed in on this device (a remembered session, not a
+  // fresh password entry) — otherwise Yasser/Pieter reopening the team board tab would just sit
+  // on the task page instead of being routed on, same as a brand-new sign-in.
+  // Only once per tab, though: the page silently reloads itself every ~60s to stay in sync
+  // (see the setInterval near the bottom), and without this guard that reload would trigger this
+  // same redirect every minute, bouncing Yasser/Pieter off the task page in a loop. sessionStorage
+  // survives location.reload() in the same tab but not a brand-new tab, so a fresh tab still redirects.
+  function maybeGoToCommandCentre(){
+    if(isTestFixture() || wantsToStay()) return;
+    var m = me(); if(!m || !CC_PEOPLE[m.id]) return;
+    try { if(ss.get('ccRedirected') === '1') return; ss.set('ccRedirected', '1'); } catch(e){}
+    goToCommandCentre(m.id);
+  }
   // fresh=true only for an actual sign-in action (picking your name and entering/creating a
   // password) — never for a same-session password change, so someone already looking at their
   // tasks isn't yanked away to Command Centre just for updating their password.
   function signIn(pid, pw, fresh){
     ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0);
-    // location.hostname check excludes the Playwright test fixture (served from todo.test),
-    // which signs in as Yasser/Pieter to test unrelated things and must stay on this page.
-    if(fresh && CC_PEOPLE[pid] && location.hostname !== 'todo.test'){
+    if(fresh && CC_PEOPLE[pid] && !isTestFixture() && !wantsToStay()){
       // If this sign-in just set a brand-new password (first time), don't leave that save
       // sitting in its usual debounce window — flush it now so it isn't lost to the navigation.
       var hadPending = pendingSave;
       if(hadPending){ clearTimeout(saveTimer); save(); }
-      setTimeout(function(){ location.href = CC_URL + '?person=' + encodeURIComponent(pid); }, hadPending ? 400 : 0);
+      setTimeout(function(){ goToCommandCentre(pid); }, hadPending ? 400 : 0);
     }
   }
   function signOut(){ ls.del(AUTH_KEY); ls.del(ME_KEY); openWho(); render(); }
@@ -2582,7 +2600,10 @@ button{font:inherit;cursor:pointer}
 
   render();
   if(!me()) openWho();
-  else if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
+  else {
+    maybeGoToCommandCentre();
+    if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
+  }
   setTimeout(function(){ announceNew(); announceNewTasks(); announceReads(); checkStoredAlerts(); checkStoredReminders(); }, 400);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && chatOpen) recordRead(chatChan); });
 
