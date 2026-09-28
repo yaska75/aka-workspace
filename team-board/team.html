@@ -1955,31 +1955,33 @@ button{font:inherit;cursor:pointer}
   // location.hostname check excludes the Playwright test fixture (served from todo.test),
   // which signs in as Yasser/Pieter to test unrelated things and must stay on this page.
   function isTestFixture(){ return location.hostname === 'todo.test'; }
-  function goToCommandCentre(pid){ location.href = CC_URL + '?person=' + encodeURIComponent(pid); }
-  // Called at boot for someone already signed in on this device (a remembered session, not a
-  // fresh password entry) — otherwise Yasser/Pieter reopening the team board tab would just sit
-  // on the task page instead of being routed on, same as a brand-new sign-in.
-  // Only once per tab, though: the page silently reloads itself every ~60s to stay in sync
-  // (see the setInterval near the bottom), and without this guard that reload would trigger this
-  // same redirect every minute, bouncing Yasser/Pieter off the task page in a loop. sessionStorage
-  // survives location.reload() in the same tab but not a brand-new tab, so a fresh tab still redirects.
-  function maybeGoToCommandCentre(){
-    if(isTestFixture() || wantsToStay()) return;
-    var m = me(); if(!m || !CC_PEOPLE[m.id]) return;
-    try { if(ss.get('ccRedirected') === '1') return; ss.set('ccRedirected', '1'); } catch(e){}
-    goToCommandCentre(m.id);
+  // Reuses the real, already-working "Command Centre ↗" button (#ccBtn) instead of setting
+  // location.href ourselves. This page runs inside claude.ai's own sandboxed frame, and a plain
+  // `location.href = otherUrl` navigates *that frame in place* rather than the browser tab — so
+  // the Command Centre page ends up trying to load inside our frame, and since it (like any
+  // normal site) refuses to be displayed inside someone else's page, the whole screen turns into
+  // a blank "This content is blocked" placeholder instead of actually taking you anywhere.
+  // Clicking a real <a target="aka-command-centre"> link opens/reuses its own browser tab
+  // instead, which is exactly how the visible button already works correctly.
+  function goToCommandCentre(pid){
+    var a = $('ccBtn'); if(!a) return;
+    a.href = CC_URL + '?person=' + encodeURIComponent(pid);
+    a.click();
   }
   // fresh=true only for an actual sign-in action (picking your name and entering/creating a
   // password) — never for a same-session password change, so someone already looking at their
-  // tasks isn't yanked away to Command Centre just for updating their password.
+  // tasks isn't yanked away to Command Centre just for updating their password. This only fires
+  // on that one action, not on every later page load/reload while still signed in — since
+  // goToCommandCentre() opens its own tab, this tab is left exactly as it was either way.
   function signIn(pid, pw, fresh){
     ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0);
     if(fresh && CC_PEOPLE[pid] && !isTestFixture() && !wantsToStay()){
       // If this sign-in just set a brand-new password (first time), don't leave that save
-      // sitting in its usual debounce window — flush it now so it isn't lost to the navigation.
-      var hadPending = pendingSave;
-      if(hadPending){ clearTimeout(saveTimer); save(); }
-      setTimeout(function(){ goToCommandCentre(pid); }, hadPending ? 400 : 0);
+      // sitting in its usual debounce window. No need to delay the click for it, though: unlike
+      // a same-tab navigation, opening Command Centre in its own tab leaves this tab (and the
+      // in-flight save) running normally.
+      if(pendingSave){ clearTimeout(saveTimer); save(); }
+      goToCommandCentre(pid);
     }
   }
   function signOut(){ ls.del(AUTH_KEY); ls.del(ME_KEY); openWho(); render(); }
@@ -2600,10 +2602,7 @@ button{font:inherit;cursor:pointer}
 
   render();
   if(!me()) openWho();
-  else {
-    maybeGoToCommandCentre();
-    if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
-  }
+  else if(chatOpen){ $('chatPanel').hidden = false; document.body.classList.add('chat-on'); renderChat(true); renderTop(); }
   setTimeout(function(){ announceNew(); announceNewTasks(); announceReads(); checkStoredAlerts(); checkStoredReminders(); }, 400);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && chatOpen) recordRead(chatChan); });
 
