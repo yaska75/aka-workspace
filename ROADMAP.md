@@ -1,6 +1,18 @@
 # Roadmap
 
 ## Shipped
+- **Team board and Command Centre: no more silent auto-refresh** (29-30 Sep 2026). Both pages used to
+  reload themselves in the background every so often, which could reset your scroll position or make
+  things jump under you. Now they only refresh when you click a button: the team board has a
+  "Refresh" button in the header and one in the chat panel (it saves anything you were doing first,
+  then reloads), and Command Centre has a "Refresh" button that lights up with a small red dot when
+  new WhatsApp/Telegram/email/LinkedIn data has come in from a background sync, so you choose when to
+  bring it on screen instead of it jumping in front of you.
+- **Team board: quick date-change on tasks, and direct-to-Drive uploads** (29 Sep 2026). Each task's
+  due date can now be changed inline (today/tomorrow/next week or pick a date) without opening the
+  full editor. Depositing a result file can upload straight to the team's Drive folder when Google
+  Drive is connected to your Claude account, or you can still just paste a link — pasting a link now
+  attaches it right away, no extra click.
 - **Fix: "blocked" screen on signing in as Yasser/Pieter** (28 Sep 2026). The sign-in redirect to
   Command Centre was briefly broken — right after entering your password you'd see a blank "This
   content is blocked" page instead of Command Centre. It opens its own tab now (the same way the
