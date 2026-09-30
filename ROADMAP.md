@@ -1,6 +1,11 @@
 # Roadmap
 
 ## Shipped
+- **Team board: last sign-in time and location, shown on the task page** (30 Sep 2026). Under each
+  person's name on their list, you can now see when they last actually signed in and where from —
+  e.g. "Last signed in Today 14:32 · Dubai". It only updates on a real sign-in (entering your
+  password), not every time someone's tab reloads. Anyone who hasn't signed in since this shipped
+  just won't show a line yet, until they do.
 - **Team board and Command Centre: no more silent auto-refresh** (29-30 Sep 2026). Both pages used to
   reload themselves in the background every so often, which could reset your scroll position or make
   things jump under you. Now they only refresh when you click a button: the team board has a
