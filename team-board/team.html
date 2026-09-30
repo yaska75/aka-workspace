@@ -353,6 +353,7 @@ button{font:inherit;cursor:pointer}
 .sheet .primary{--c:var(--accent)}
 @media (max-width:560px){.fields{grid-template-columns:1fr}.addp{grid-template-columns:1fr}}
 .team-tag{display:inline-block;margin-top:6px;font-size:12px;color:var(--muted)}
+.lastSignIn{display:block;margin-top:2px;font-size:11px;color:var(--muted);opacity:.8}
 .rules{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:var(--paper);border:1px solid var(--line);font-size:14px;color:var(--muted)}
 .rules b{color:var(--ink)}
 .send{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -579,6 +580,21 @@ button{font:inherit;cursor:pointer}
     try { return new Date(s + 'T00:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); }
     catch(e){ return s; }
   }
+  // "Last signed in" line: Today/Yesterday when recent, otherwise a short date, always with the time.
+  function fmtLastSignIn(rec){
+    if(!rec || !rec.at) return '';
+    try {
+      var d = new Date(rec.at), now = new Date();
+      var sameDay = d.toDateString() === now.toDateString();
+      var yest = new Date(now); yest.setDate(yest.getDate() - 1);
+      var isYest = d.toDateString() === yest.toDateString();
+      var day = sameDay ? 'Today' : isYest ? 'Yesterday' : d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+      var time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+      var line = 'Last signed in ' + day + ' ' + time;
+      if(rec.where) line += ' · ' + rec.where;
+      return line;
+    } catch(e){ return ''; }
+  }
   function tasksOf(pid){ var p = person(pid); return p ? p.tasks : []; }
   function find(pid, id){ var t = tasksOf(pid); for(var i=0;i<t.length;i++){ if(t[i].id === id) return t[i]; } return null; }
   function sorted(pid){
@@ -605,7 +621,7 @@ button{font:inherit;cursor:pointer}
   }
 
   // ---------- columns ----------
-  function signature(){ return visiblePeople().map(function(p){ return [p.id, p.name, p.role, p.team, p.color, (p.photo || '').length].join('|'); }).join('/') + '#' + (myId() || ''); }
+  function signature(){ return visiblePeople().map(function(p){ return [p.id, p.name, p.role, p.team, p.color, (p.photo || '').length, (p.lastSignIn && p.lastSignIn.at) || 0].join('|'); }).join('/') + '#' + (myId() || ''); }
 
   // fold a person's list down to just their name/photo until you click to open it; your own list starts open
   function foldKey(pid){ return 'col-fold-' + pid; }
@@ -635,7 +651,7 @@ button{font:inherit;cursor:pointer}
       sec.id = 'col-' + p.id; sec.setAttribute('aria-label', p.name + '’s list');
       sec.innerHTML =
         '<div class="hero">' + avatarHtml(p) +
-          '<div class="hero-text"><h2></h2><div class="whereBox"></div><span class="team-tag"></span></div>' +
+          '<div class="hero-text"><h2></h2><div class="whereBox"></div><span class="team-tag"></span><span class="lastSignIn"></span></div>' +
           '<span class="presence off" aria-label="' + p.name + '’s status">Asleep</span>' +
           '<button class="foldBtn" type="button" aria-expanded="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Hide</span></button>' +
         '</div>' +
@@ -661,6 +677,9 @@ button{font:inherit;cursor:pointer}
       if(p.role !== 'member'){ var r = document.createElement('span'); r.className = 'role'; r.textContent = ROLE_NAMES[p.role]; h2.appendChild(r); }
       sec.querySelector('.tabs').setAttribute('aria-label', 'Show ' + p.name + '\u2019s tasks');
       sec.querySelector('.team-tag').textContent = TEAM_NAMES[p.team] + ' team';
+      var lsiEl = sec.querySelector('.lastSignIn');
+      var lsiText = fmtLastSignIn(p.lastSignIn);
+      if(lsiText){ lsiEl.textContent = lsiText; } else { lsiEl.hidden = true; }
       var nt = sec.querySelector('.newText');
       nt.placeholder = 'Add a task for ' + p.name; nt.setAttribute('aria-label', 'New task for ' + p.name);
       cols.appendChild(sec);
@@ -2116,6 +2135,10 @@ button{font:inherit;cursor:pointer}
   // goToCommandCentre() opens its own tab, this tab is left exactly as it was either way.
   function signIn(pid, pw, fresh){
     ls.set(AUTH_KEY, JSON.stringify({ pid: pid, pw: pw })); ls.set(ME_KEY, pid); ls.del(FAIL_KEY); setTimeout(broadcastPresence, 0);
+    if(fresh){
+      var sp = person(pid);
+      if(sp) change({ type: 'pset', pid: pid, fields: { lastSignIn: { at: Date.now(), where: sp.location || '' } } });
+    }
     if(fresh && CC_PEOPLE[pid] && !isTestFixture() && !wantsToStay()){
       // If this sign-in just set a brand-new password (first time), don't leave that save
       // sitting in its usual debounce window. No need to delay the click for it, though: unlike
